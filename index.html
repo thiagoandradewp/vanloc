@@ -374,533 +374,13 @@ VIAGENS
         id="listaViagens"
     >
 
+        <!-- preenchido via JS (script.js) com as viagens do banco de dados -->
 
-        <!-- =================================================
-        VIAGEM 1
-        ================================================= -->
+        <div class="viagens-vazio" id="viagensCarregando">
 
-        <div
-            class="viagem-card"
-            data-destino="recife"
-            data-data="2026-09-15"
-        >
+            <i class="fa-solid fa-spinner fa-spin"></i>
 
-
-            <div class="imagem-van">
-
-
-                <img loading="lazy" decoding="async"
-                    src="https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=800&q=80"
-                    alt="Van de transporte"
-                    onerror="this.onerror=null;this.src='van.png';this.classList.add('img-fallback')"
-                >
-
-
-                <span class="disponivel">
-
-                    Disponível
-
-                </span>
-
-
-            </div>
-
-
-
-            <div class="viagem-info">
-
-
-                <div class="motorista-info">
-
-
-                    <div class="avatar">
-
-                        CF
-
-                    </div>
-
-
-                    <div>
-
-                        <strong>
-
-                            Charles Fernando
-
-                        </strong>
-
-
-                        <span>
-
-                            Motorista verificado
-
-                            <i class="fa-solid fa-circle-check"></i>
-
-                        </span>
-
-                    </div>
-
-
-                </div>
-
-
-
-                <h3>
-
-                    Serra Talhada
-
-                    <i class="fa-solid fa-arrow-right"></i>
-
-                    Recife
-
-                </h3>
-
-
-
-                <div class="detalhes">
-
-
-                    <span>
-
-                        <i class="fa-solid fa-calendar"></i>
-
-                        15/09/2026
-
-                    </span>
-
-
-                    <span>
-
-                        <i class="fa-solid fa-clock"></i>
-
-                        06:30
-
-                    </span>
-
-
-                </div>
-
-
-
-                <div class="rodape-viagem">
-
-
-                    <div class="preco">
-
-
-                        <small>
-
-                            Viagem avulsa
-
-                        </small>
-
-
-                        <strong>
-
-                            R$ 80,00
-
-                        </strong>
-
-
-                        <small class="valor-minimo">
-
-                            Planos a partir de R$ 20,00/viagem
-
-                        </small>
-
-
-                    </div>
-
-
-
-                    <div class="botoes-viagem">
-
-
-                        <button
-                            class="btn-planos"
-                            onclick="consultarPlanos('charles@vanloc.com')"
-                        >
-
-                            <i class="fa-solid fa-tags"></i>
-
-                            Consultar planos
-
-                        </button>
-
-
-                        <button
-                            class="btn-reservar"
-                            onclick="reservar(
-                                'Serra Talhada para Recife', this
-                            )"
-                        >
-
-                            Reservar
-
-                        </button>
-
-
-                    </div>
-
-
-                </div>
-
-
-            </div>
-
-
-        </div>
-
-
-
-        <!-- =================================================
-        VIAGEM 2
-        ================================================= -->
-
-        <div
-            class="viagem-card"
-            data-destino="caruaru"
-            data-data="2026-09-16"
-        >
-
-
-            <div class="imagem-van">
-
-
-                <img loading="lazy" decoding="async"
-                    src="https://images.unsplash.com/photo-1516939884455-1445c8652f83?auto=format&fit=crop&w=800&q=80"
-                    alt="Van de transporte"
-                    onerror="this.onerror=null;this.src='van.png';this.classList.add('img-fallback')"
-                >
-
-
-                <span class="disponivel">
-
-                    Disponível
-
-                </span>
-
-
-            </div>
-
-
-
-            <div class="viagem-info">
-
-
-                <div class="motorista-info">
-
-
-                    <div class="avatar">
-
-                        JM
-
-                    </div>
-
-
-                    <div>
-
-                        <strong>
-
-                            João Martins
-
-                        </strong>
-
-
-                        <span>
-
-                            Motorista verificado
-
-                            <i class="fa-solid fa-circle-check"></i>
-
-                        </span>
-
-                    </div>
-
-
-                </div>
-
-
-
-                <h3>
-
-                    Recife
-
-                    <i class="fa-solid fa-arrow-right"></i>
-
-                    Caruaru
-
-                </h3>
-
-
-
-                <div class="detalhes">
-
-
-                    <span>
-
-                        <i class="fa-solid fa-calendar"></i>
-
-                        16/09/2026
-
-                    </span>
-
-
-                    <span>
-
-                        <i class="fa-solid fa-clock"></i>
-
-                        08:00
-
-                    </span>
-
-
-                </div>
-
-
-
-                <div class="rodape-viagem">
-
-
-                    <div class="preco">
-
-
-                        <small>
-
-                            Viagem avulsa
-
-                        </small>
-
-
-                        <strong>
-
-                            R$ 45,00
-
-                        </strong>
-
-
-                        <small class="valor-minimo">
-
-                            Planos a partir de R$ 20,00/viagem
-
-                        </small>
-
-
-                    </div>
-
-
-
-                    <div class="botoes-viagem">
-
-
-                        <button
-                            class="btn-planos"
-                            onclick="consultarPlanos('joao@vanloc.com')"
-                        >
-
-                            <i class="fa-solid fa-tags"></i>
-
-                            Consultar planos
-
-                        </button>
-
-
-                        <button
-                            class="btn-reservar"
-                            onclick="reservar(
-                                'Recife para Caruaru', this
-                            )"
-                        >
-
-                            Reservar
-
-                        </button>
-
-
-                    </div>
-
-
-                </div>
-
-
-            </div>
-
-
-        </div>
-
-
-
-        <!-- =================================================
-        VIAGEM 3
-        ================================================= -->
-
-        <div
-            class="viagem-card"
-            data-destino="petrolina"
-            data-data="2026-09-17"
-        >
-
-
-            <div class="imagem-van">
-
-
-                <img loading="lazy" decoding="async"
-                    src="https://images.unsplash.com/photo-1566576912321-d58ddd7a6088?auto=format&fit=crop&w=800&q=80"
-                    alt="Van de transporte"
-                    onerror="this.onerror=null;this.src='van.png';this.classList.add('img-fallback')"
-                >
-
-
-                <span class="disponivel">
-
-                    Disponível
-
-                </span>
-
-
-            </div>
-
-
-
-            <div class="viagem-info">
-
-
-                <div class="motorista-info">
-
-
-                    <div class="avatar">
-
-                        MS
-
-                    </div>
-
-
-                    <div>
-
-                        <strong>
-
-                            Marcos Silva
-
-                        </strong>
-
-
-                        <span>
-
-                            Motorista verificado
-
-                            <i class="fa-solid fa-circle-check"></i>
-
-                        </span>
-
-                    </div>
-
-
-                </div>
-
-
-
-                <h3>
-
-                    Serra Talhada
-
-                    <i class="fa-solid fa-arrow-right"></i>
-
-                    Petrolina
-
-                </h3>
-
-
-
-                <div class="detalhes">
-
-
-                    <span>
-
-                        <i class="fa-solid fa-calendar"></i>
-
-                        17/09/2026
-
-                    </span>
-
-
-                    <span>
-
-                        <i class="fa-solid fa-clock"></i>
-
-                        05:00
-
-                    </span>
-
-
-                </div>
-
-
-
-                <div class="rodape-viagem">
-
-
-                    <div class="preco">
-
-
-                        <small>
-
-                            Viagem avulsa
-
-                        </small>
-
-
-                        <strong>
-
-                            R$ 100,00
-
-                        </strong>
-
-
-                        <small class="valor-minimo">
-
-                            Planos a partir de R$ 20,00/viagem
-
-                        </small>
-
-
-                    </div>
-
-
-
-                    <div class="botoes-viagem">
-
-
-                        <button
-                            class="btn-planos"
-                            onclick="consultarPlanos('marcos@vanloc.com')"
-                        >
-
-                            <i class="fa-solid fa-tags"></i>
-
-                            Consultar planos
-
-                        </button>
-
-
-                        <button
-                            class="btn-reservar"
-                            onclick="reservar(
-                                'Serra Talhada para Petrolina', this
-                            )"
-                        >
-
-                            Reservar
-
-                        </button>
-
-
-                    </div>
-
-
-                </div>
-
-
-            </div>
-
+            Carregando viagens...
 
         </div>
 
@@ -1176,6 +656,7 @@ PASSAGEIRO
             <input
                 type="password"
                 id="passageiroSenha"
+                minlength="6"
                 placeholder="Digite sua senha"
                 required
             >
@@ -1652,7 +1133,7 @@ MODAL LOGIN
             </h2>
 
 
-            <p>
+            <p id="loginSubtitulo">
 
                 Acesse sua conta de passageiro
 
@@ -1675,6 +1156,21 @@ MODAL LOGIN
 
 
         <form id="formLogin">
+
+
+            <div class="login-tipo" role="radiogroup" aria-label="Tipo de conta">
+
+                <label>
+                    <input type="radio" name="tipoLogin" value="passageiro" checked>
+                    <span><i class="fa-solid fa-user"></i> Passageiro</span>
+                </label>
+
+                <label>
+                    <input type="radio" name="tipoLogin" value="motorista">
+                    <span><i class="fa-solid fa-id-card"></i> Motorista</span>
+                </label>
+
+            </div>
 
 
             <label>Email</label>
@@ -1711,7 +1207,7 @@ MODAL LOGIN
 
 
 
-            <p class="criar-conta">
+            <p class="criar-conta" id="criarContaPassageiro">
 
                 Ainda não possui uma conta?
 
@@ -1770,6 +1266,19 @@ MODAL MOTORISTA
         <p class="subtitulo">
 
             Cadastre suas informações, sua Van e sua viagem.
+
+        </p>
+
+
+        <p class="criar-conta">
+
+            Já é motorista cadastrado?
+
+            <a href="#" onclick="abrirLogin('motorista'); fecharMotorista(); return false;">
+
+                Entrar no painel
+
+            </a>
 
         </p>
 
@@ -1837,6 +1346,39 @@ MODAL MOTORISTA
                     <input
                         type="text"
                         id="cpfMotorista"
+                        required
+                    >
+
+                </div>
+
+
+            
+
+                <div>
+
+                    <label>Senha de acesso</label>
+
+                    <input
+                        type="password"
+                        id="senhaMotorista"
+                        minlength="6"
+                        autocomplete="new-password"
+                        placeholder="Mínimo 6 caracteres"
+                        required
+                    >
+
+                </div>
+
+
+                <div>
+
+                    <label>Confirme a senha</label>
+
+                    <input
+                        type="password"
+                        id="confirmarSenhaMotorista"
+                        minlength="6"
+                        autocomplete="new-password"
                         required
                     >
 
@@ -2125,351 +1667,7 @@ MODAL PLANOS
             id="listaPlanos"
         >
 
-
-            <!-- PLANO BÁSICO -->
-
-
-            <div class="plano-card">
-
-
-                <div class="plano-titulo">
-
-
-                    <i class="fa-solid fa-ticket"></i>
-
-
-                    <h3>
-
-                        Plano Básico
-
-                    </h3>
-
-
-                </div>
-
-
-
-                <p class="descricao-plano">
-
-                    Ideal para quem realiza viagens ocasionalmente.
-
-                </p>
-
-
-
-                <div class="preco-plano">
-
-
-                    <small>
-
-                        A partir de
-
-                    </small>
-
-
-                    <strong>
-
-                        R$ 20,00
-
-                    </strong>
-
-
-                    <span>
-
-                        por viagem
-
-                    </span>
-
-
-                </div>
-
-
-
-                <ul>
-
-
-                    <li>
-
-                        <i class="fa-solid fa-check"></i>
-
-                        Até 4 viagens
-
-                    </li>
-
-
-                    <li>
-
-                        <i class="fa-solid fa-check"></i>
-
-                        Reserva antecipada
-
-                    </li>
-
-
-                    <li>
-
-                        <i class="fa-solid fa-check"></i>
-
-                        Suporte pela VANLOC
-
-                    </li>
-
-
-                </ul>
-
-
-
-                <button
-                    onclick="assinarPlano('Plano Básico')"
-                >
-
-                    Assinar plano
-
-                </button>
-
-
-            </div>
-
-
-
-            <!-- PLANO FREQUENTE -->
-
-
-            <div
-                class="plano-card plano-destaque"
-            >
-
-
-                <div class="mais-escolhido">
-
-                    MAIS ESCOLHIDO
-
-                </div>
-
-
-
-                <div class="plano-titulo">
-
-
-                    <i class="fa-solid fa-star"></i>
-
-
-                    <h3>
-
-                        Plano Frequente
-
-                    </h3>
-
-
-                </div>
-
-
-
-                <p class="descricao-plano">
-
-                    Para passageiros que viajam com frequência.
-
-                </p>
-
-
-
-                <div class="preco-plano">
-
-
-                    <small>
-
-                        A partir de
-
-                    </small>
-
-
-                    <strong>
-
-                        R$ 25,00
-
-                    </strong>
-
-
-                    <span>
-
-                        por viagem
-
-                    </span>
-
-
-                </div>
-
-
-
-                <ul>
-
-
-                    <li>
-
-                        <i class="fa-solid fa-check"></i>
-
-                        Até 10 viagens
-
-                    </li>
-
-
-                    <li>
-
-                        <i class="fa-solid fa-check"></i>
-
-                        Prioridade nas reservas
-
-                    </li>
-
-
-                    <li>
-
-                        <i class="fa-solid fa-check"></i>
-
-                        Desconto nas viagens
-
-                    </li>
-
-
-                    <li>
-
-                        <i class="fa-solid fa-check"></i>
-
-                        Atendimento prioritário
-
-                    </li>
-
-
-                </ul>
-
-
-
-                <button
-                    onclick="assinarPlano('Plano Frequente')"
-                >
-
-                    Assinar plano
-
-                </button>
-
-
-            </div>
-
-
-
-            <!-- PLANO PREMIUM -->
-
-
-            <div class="plano-card">
-
-
-                <div class="plano-titulo">
-
-
-                    <i class="fa-solid fa-crown"></i>
-
-
-                    <h3>
-
-                        Plano Premium
-
-                    </h3>
-
-
-                </div>
-
-
-
-                <p class="descricao-plano">
-
-                    Para quem precisa viajar sempre.
-
-                </p>
-
-
-
-                <div class="preco-plano">
-
-
-                    <small>
-
-                        A partir de
-
-                    </small>
-
-
-                    <strong>
-
-                        R$ 30,00
-
-                    </strong>
-
-
-                    <span>
-
-                        por viagem
-
-                    </span>
-
-
-                </div>
-
-
-
-                <ul>
-
-
-                    <li>
-
-                        <i class="fa-solid fa-check"></i>
-
-                        Mais de 10 viagens
-
-                    </li>
-
-
-                    <li>
-
-                        <i class="fa-solid fa-check"></i>
-
-                        Prioridade máxima
-
-                    </li>
-
-
-                    <li>
-
-                        <i class="fa-solid fa-check"></i>
-
-                        Descontos especiais
-
-                    </li>
-
-
-                    <li>
-
-                        <i class="fa-solid fa-check"></i>
-
-                        Benefícios exclusivos
-
-                    </li>
-
-
-                </ul>
-
-
-
-                <button
-                    onclick="assinarPlano('Plano Premium')"
-                >
-
-                    Assinar plano
-
-                </button>
-
-
-            </div>
-
+            <!-- preenchido via JS -->
 
         </div>
 

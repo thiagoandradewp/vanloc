@@ -3782,3 +3782,220 @@ MELHORIAS: HERO RESPONSIVO E IMAGENS
     object-fit: cover;
     flex-shrink: 0;
 }
+
+
+/* =====================================================
+VERSÃO COM BANCO DE DADOS (API)
+===================================================== */
+
+/* Login: escolha entre passageiro e motorista */
+
+.login-tipo {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 18px;
+}
+
+.login-tipo label {
+    margin: 0;
+    cursor: pointer;
+}
+
+.login-tipo input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.login-tipo span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 11px;
+    border: 1px solid #d0d5dd;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #475467;
+    transition: all .2s;
+}
+
+.login-tipo input:checked + span {
+    border-color: #2563eb;
+    background: #2563eb;
+    color: white;
+}
+
+.login-tipo input:focus-visible + span {
+    outline: 2px solid #2563eb;
+    outline-offset: 2px;
+}
+
+/* Cards de viagem */
+
+.disponivel.lotada {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.btn-reservar:disabled {
+    background: #d0d5dd;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
+
+.viagens-grid > .viagens-vazio {
+    grid-column: 1 / -1;
+    font-size: 15px;
+}
+
+button:disabled .fa-spin {
+    margin-right: 4px;
+}
+
+/* Painel do motorista */
+
+.badge-contador {
+    margin-left: auto;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background: #ef4444;
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.linha-viagem {
+    flex-wrap: wrap;
+    gap: 8px 16px;
+}
+
+.status-viagem,
+.status-reserva {
+    font-style: normal;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background: #eff6ff;
+    color: #2563eb;
+    white-space: nowrap;
+}
+
+.status-viagem.cancelada,
+.status-reserva.recusada,
+.status-reserva.cancelada {
+    background: #fef2f2;
+    color: #dc2626;
+}
+
+.status-viagem.encerrada {
+    background: #f2f4f7;
+    color: #667085;
+}
+
+.status-reserva.solicitada {
+    background: #fffbeb;
+    color: #b45309;
+}
+
+.status-reserva.confirmada {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.linha-viagem .btn-remover-plano,
+.linha-reserva .btn-remover-plano,
+.linha-reserva .btn-editar-plano,
+.linha-reserva .btn-salvar-plano {
+    flex: none;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.linha-viagem .btn-remover-plano,
+.linha-reserva .btn-remover-plano {
+    background: #fef2f2;
+    color: #dc2626;
+}
+
+.linha-reserva .btn-editar-plano {
+    background: #f0fdf4;
+    color: #15803d;
+}
+
+.linha-reserva {
+    display: grid;
+    grid-template-columns: 1.1fr 1.4fr 1fr auto;
+    align-items: center;
+    gap: 12px 16px;
+    padding: 14px 16px;
+    background: #f7f9fc;
+    border-radius: 10px;
+    font-size: 13px;
+    border-left: 4px solid #d0d5dd;
+}
+
+.linha-reserva.status-solicitada {
+    border-left-color: #f59e0b;
+}
+
+.linha-reserva.status-confirmada {
+    border-left-color: #22c55e;
+}
+
+.linha-reserva > div {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+}
+
+.linha-reserva > div.plano-acoes {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.linha-reserva strong {
+    color: #172554;
+}
+
+.linha-reserva span {
+    color: #667085;
+}
+
+#formNovaViagem input[type=file] {
+    margin-bottom: 18px;
+}
+
+@media (max-width: 900px) {
+    .linha-reserva {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Painel do passageiro: ações da reserva */
+
+.dp-trip-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.dp-chip--recusada {
+    background: #fef2f2;
+    color: #dc2626;
+}

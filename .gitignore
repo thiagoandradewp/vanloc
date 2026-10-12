@@ -1,0 +1,5 @@
+api/config.php
+uploads/vans/*
+uploads/perfis/*
+!uploads/vans/.gitkeep
+!uploads/perfis/.gitkeep

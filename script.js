@@ -1,224 +1,130 @@
 /* =====================================================
 VANLOC - script.js
 =====================================================
-Arquivo único com toda a lógica do site:
-1) Camada de dados (localStorage) compartilhada entre
-   index.html e dashboard.html
+Arquivo único com a lógica do site:
+1) Comunicação com a API PHP (pasta /api) e sessão
 2) Lógica da página principal (index.html)
 3) Lógica do Painel do Motorista (dashboard.html)
 
+Os dados ficam no banco MySQL da hospedagem, então
+viagens, planos e reservas são os mesmos para todos os
+visitantes, em qualquer dispositivo.
+
 Cada bloco só executa código que depende do DOM quando
 os elementos daquela página realmente existem, então
-este mesmo arquivo pode ser incluído tanto no
-index.html quanto no dashboard.html sem gerar erros.
+este mesmo arquivo é incluído em todas as páginas.
 ===================================================== */
-
-
-/* =====================================================
-VANLOC - CAMADA DE DADOS (localStorage)
-=====================================================
-Este arquivo centraliza a leitura/escrita dos dados que
-precisam ser compartilhados entre o site principal
-(index.html) e o Painel do Motorista (dashboard.html).
-
-Como o VANLOC ainda não tem um backend, os dados ficam
-salvos no localStorage do navegador. Isso é suficiente
-para o motorista cadastrar seus planos no painel e o
-cliente ver esses mesmos planos no site, desde que os
-dois estejam no mesmo domínio (o que acontece quando o
-site é publicado, ex: vanloc.vercel.app).
-===================================================== */
-
-
-const VANLOC_CHAVES = {
-
-    MOTORISTAS: "vanloc_motoristas",
-
-    VIAGENS: "vanloc_viagens",
-
-    SESSAO: "vanloc_sessao_motorista"
-
-};
 
 
 const VANLOC_LIMITE_PLANOS = 3;
 
 const VANLOC_VALOR_MINIMO_PLANO = 20;
 
-
-
-/* =====================================================
-LEITURA / ESCRITA BÁSICA
-===================================================== */
-
-
-function vlGetMotoristas() {
-
-    try {
-
-        return (
-            JSON.parse(
-                localStorage.getItem(VANLOC_CHAVES.MOTORISTAS)
-            ) || {}
-        );
-
-    } catch (erro) {
-
-        return {};
-
-    }
-
-}
-
-
-function vlSalvarMotoristas(motoristas) {
-
-    localStorage.setItem(
-        VANLOC_CHAVES.MOTORISTAS,
-        JSON.stringify(motoristas)
-    );
-
-}
-
-
-function vlGetViagens() {
-
-    try {
-
-        return (
-            JSON.parse(
-                localStorage.getItem(VANLOC_CHAVES.VIAGENS)
-            ) || []
-        );
-
-    } catch (erro) {
-
-        return [];
-
-    }
-
-}
-
-
-function vlSalvarViagens(viagens) {
-
-    localStorage.setItem(
-        VANLOC_CHAVES.VIAGENS,
-        JSON.stringify(viagens)
-    );
-
-}
-
-
-function vlGetSessaoMotorista() {
-
-    return localStorage.getItem(VANLOC_CHAVES.SESSAO);
-
-}
-
-
-function vlSalvarSessaoMotorista(email) {
-
-    localStorage.setItem(VANLOC_CHAVES.SESSAO, email);
-
-}
-
-
-function vlEncerrarSessaoMotorista() {
-
-    localStorage.removeItem(VANLOC_CHAVES.SESSAO);
-
-}
+const VL_API = "api/";
 
 
 
 /* =====================================================
-PASSAGEIRO: DADOS E SESSÃO
+API
 ===================================================== */
 
 
-VANLOC_CHAVES.PASSAGEIROS = "vanloc_passageiros";
-VANLOC_CHAVES.SESSAO_PASSAGEIRO = "vanloc_sessao_passageiro";
+/*
+Faz uma requisição para a API e devolve o JSON.
+Em caso de erro, lança um Error com a mensagem vinda
+do servidor (pronta para mostrar ao usuário).
+*/
+async function vlApi(caminho, dados) {
 
-
-function vlGetPassageiros() {
-
-    try {
-
-        return JSON.parse(
-            localStorage.getItem(VANLOC_CHAVES.PASSAGEIROS)
-        ) || {};
-
-    } catch (erro) {
-
-        return {};
-
-    }
-
-}
-
-
-function vlSalvarPassageiros(passageiros) {
-
-    localStorage.setItem(
-        VANLOC_CHAVES.PASSAGEIROS,
-        JSON.stringify(passageiros)
-    );
-
-}
-
-
-function vlGetPassageiro(email) {
-
-    const passageiros = vlGetPassageiros();
-
-    return passageiros[vlNormalizarEmail(email)] || null;
-
-}
-
-
-function vlSalvarPassageiro(passageiro) {
-
-    const passageiros = vlGetPassageiros();
-    const email = vlNormalizarEmail(passageiro.email);
-
-    passageiros[email] = {
-        ...(passageiros[email] || {}),
-        ...passageiro,
-        email: email
+    const opcoes = {
+        method: dados === undefined ? "GET" : "POST",
+        credentials: "same-origin",
+        headers: { "X-Requested-With": "VanLoc" }
     };
 
-    vlSalvarPassageiros(passageiros);
+    if (dados instanceof FormData) {
+        opcoes.body = dados;
+    } else if (dados !== undefined) {
+        opcoes.headers["Content-Type"] = "application/json";
+        opcoes.body = JSON.stringify(dados);
+    }
 
-    return passageiros[email];
+    let resposta;
+
+    try {
+        resposta = await fetch(VL_API + caminho, opcoes);
+    } catch (erro) {
+        throw new Error("Sem conexão com o servidor. Verifique sua internet.");
+    }
+
+    let json = null;
+
+    try {
+        json = await resposta.json();
+    } catch (erro) {
+        json = null;
+    }
+
+    if (!resposta.ok || !json) {
+        const falha = new Error(
+            (json && json.erro) || "Não foi possível concluir a operação."
+        );
+        falha.status = resposta.status;
+        throw falha;
+    }
+
+    return json;
 
 }
 
 
-function vlGetSessaoPassageiro() {
 
-    return localStorage.getItem(
-        VANLOC_CHAVES.SESSAO_PASSAGEIRO
-    );
+/* =====================================================
+SESSÃO
+=====================================================
+vlUsuario guarda o usuário logado (passageiro ou
+motorista) ou null. vlSessaoPronta é uma Promise que
+resolve quando a sessão já foi consultada no servidor.
+===================================================== */
+
+
+let vlUsuario = null;
+
+
+const vlSessaoPronta = vlApi("auth.php?acao=sessao")
+    .then(function(resposta) {
+        vlUsuario = resposta.usuario || null;
+        return vlUsuario;
+    })
+    .catch(function() {
+        vlUsuario = null;
+        return null;
+    });
+
+
+function vlPassageiroLogado() {
+
+    return vlUsuario && vlUsuario.tipo === "passageiro" ? vlUsuario : null;
 
 }
 
 
-function vlSalvarSessaoPassageiro(email) {
+function vlMotoristaLogado() {
 
-    localStorage.setItem(
-        VANLOC_CHAVES.SESSAO_PASSAGEIRO,
-        vlNormalizarEmail(email)
-    );
+    return vlUsuario && vlUsuario.tipo === "motorista" ? vlUsuario : null;
 
 }
 
 
-function vlEncerrarSessaoPassageiro() {
+async function vlSair() {
 
-    localStorage.removeItem(
-        VANLOC_CHAVES.SESSAO_PASSAGEIRO
-    );
+    try {
+        await vlApi("auth.php?acao=logout", {});
+    } catch (erro) {
+        // mesmo com erro, leva o usuário para a página inicial
+    }
+
+    window.location.href = "index.html";
 
 }
 
@@ -231,14 +137,25 @@ function atualizarHeaderPassageiro() {
         return;
     }
 
-    const email = vlGetSessaoPassageiro();
-    const passageiro = email ? vlGetPassageiro(email) : null;
+    if (vlMotoristaLogado()) {
+        botao.classList.add("logado-passageiro");
+        botao.innerHTML =
+            '<i class="fa-solid fa-gauge"></i> <span>Meu painel</span>';
+        botao.onclick = function() {
+            window.location.href = "dashboard.html";
+        };
+        return;
+    }
+
+    const passageiro = vlPassageiroLogado();
 
     if (!passageiro) {
         botao.classList.remove("logado-passageiro");
         botao.innerHTML =
             '<i class="fa-solid fa-user"></i> Entrar';
-        botao.onclick = abrirLogin;
+        botao.onclick = function() {
+            abrirLogin();
+        };
         return;
     }
 
@@ -246,7 +163,7 @@ function atualizarHeaderPassageiro() {
         (passageiro.nome || "Usuário").split(" ")[0];
 
     const foto = passageiro.foto
-        ? `<img class="avatar-header" src="${passageiro.foto}" alt="Foto de ${escapeHtml(primeiroNome)}">`
+        ? `<img class="avatar-header" src="${escapeHtml(passageiro.foto)}" alt="Foto de ${escapeHtml(primeiroNome)}">`
         : '<span class="avatar-header avatar-inicial">' +
           escapeHtml(primeiroNome.charAt(0).toUpperCase()) +
           '</span>';
@@ -263,546 +180,16 @@ function atualizarHeaderPassageiro() {
 }
 
 
-document.addEventListener("DOMContentLoaded", function() {
-    atualizarHeaderPassageiro();
+vlSessaoPronta.then(function() {
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", atualizarHeaderPassageiro);
+    } else {
+        atualizarHeaderPassageiro();
+    }
+
 });
 
-
-
-/* =====================================================
-MOTORISTA: BUSCAR / SALVAR
-===================================================== */
-
-
-function vlNormalizarEmail(email) {
-
-    return (email || "").trim().toLowerCase();
-
-}
-
-
-function vlGetMotorista(email) {
-
-    const motoristas = vlGetMotoristas();
-
-    return motoristas[vlNormalizarEmail(email)] || null;
-
-}
-
-
-function vlSalvarMotorista(dadosMotorista) {
-
-    const motoristas = vlGetMotoristas();
-
-    const email = vlNormalizarEmail(dadosMotorista.email);
-
-    const existente = motoristas[email];
-
-
-    motoristas[email] = {
-
-        nome: dadosMotorista.nome,
-
-        telefone: dadosMotorista.telefone,
-
-        email: email,
-
-        cpf: dadosMotorista.cpf,
-
-        modeloVan: dadosMotorista.modeloVan,
-
-        placaVan: dadosMotorista.placaVan,
-
-        lugaresVan: dadosMotorista.lugaresVan,
-
-        /* mantém os planos já existentes do motorista */
-        planos:
-            existente && existente.planos ?
-            existente.planos :
-            []
-
-    };
-
-
-    vlSalvarMotoristas(motoristas);
-
-    return motoristas[email];
-
-}
-
-
-
-/* =====================================================
-VIAGENS: ADICIONAR / LISTAR POR MOTORISTA
-===================================================== */
-
-
-function vlAdicionarViagem(viagem) {
-
-    const viagens = vlGetViagens();
-
-
-    const novaViagem = {
-
-        id: "v_" + Date.now(),
-
-        motoristaEmail: vlNormalizarEmail(viagem.motoristaEmail),
-
-        origem: viagem.origem,
-
-        destino: viagem.destino,
-
-        data: viagem.data,
-
-        horario: viagem.horario,
-
-        valor: Number(viagem.valor) || 0,
-
-        vagas: viagem.vagas,
-
-        criadaEm: Date.now()
-
-    };
-
-
-    viagens.push(novaViagem);
-
-    vlSalvarViagens(viagens);
-
-    return novaViagem;
-
-}
-
-
-function vlGetViagensDoMotorista(email) {
-
-    const emailNormalizado = vlNormalizarEmail(email);
-
-    return vlGetViagens()
-        .filter(v => v.motoristaEmail === emailNormalizado);
-
-}
-
-
-
-/* =====================================================
-PLANOS: CRIAR / EDITAR / REMOVER
-===================================================== */
-
-
-function vlGetPlanosOrdenados(email) {
-
-    const motorista = vlGetMotorista(email);
-
-
-    if (!motorista || !motorista.planos) {
-
-        return [];
-
-    }
-
-
-    /* do mais caro para o mais barato */
-
-    return [...motorista.planos].sort(
-        (a, b) => Number(b.valor) - Number(a.valor)
-    );
-
-}
-
-
-function vlSalvarPlano(email, plano) {
-
-    const motoristas = vlGetMotoristas();
-
-    const emailNormalizado = vlNormalizarEmail(email);
-
-    const motorista = motoristas[emailNormalizado];
-
-
-    if (!motorista) {
-
-        return {
-            ok: false,
-            mensagem: "Motorista não encontrado."
-        };
-
-    }
-
-
-    if (Number(plano.valor) < VANLOC_VALOR_MINIMO_PLANO) {
-
-        return {
-
-            ok: false,
-
-            mensagem:
-                "O valor mínimo do plano é R$ " +
-                VANLOC_VALOR_MINIMO_PLANO.toFixed(2).replace(".", ",") +
-                " por viagem."
-
-        };
-
-    }
-
-
-    const jaExiste =
-        plano.id &&
-        motorista.planos.some(p => p.id === plano.id);
-
-
-    if (
-        !jaExiste &&
-        motorista.planos.length >= VANLOC_LIMITE_PLANOS
-    ) {
-
-        return {
-
-            ok: false,
-
-            mensagem:
-                "Você já atingiu o limite de " +
-                VANLOC_LIMITE_PLANOS +
-                " planos."
-
-        };
-
-    }
-
-
-    if (jaExiste) {
-
-        motorista.planos = motorista.planos.map(function(p) {
-
-            if (p.id === plano.id) {
-
-                return {
-
-                    ...p,
-
-                    nome: plano.nome,
-
-                    valor: Number(plano.valor),
-
-                    quantidade: plano.quantidade,
-
-                    vantagens: plano.vantagens
-
-                };
-
-            }
-
-            return p;
-
-        });
-
-    }
-
-    else {
-
-        motorista.planos.push({
-
-            id: "p_" + Date.now(),
-
-            nome: plano.nome,
-
-            valor: Number(plano.valor),
-
-            quantidade: plano.quantidade,
-
-            vantagens: plano.vantagens
-
-        });
-
-    }
-
-
-    motoristas[emailNormalizado] = motorista;
-
-    vlSalvarMotoristas(motoristas);
-
-
-    return {
-        ok: true,
-        motorista: motorista
-    };
-
-}
-
-
-function vlRemoverPlano(email, planoId) {
-
-    const motoristas = vlGetMotoristas();
-
-    const emailNormalizado = vlNormalizarEmail(email);
-
-    const motorista = motoristas[emailNormalizado];
-
-
-    if (!motorista) {
-
-        return;
-
-    }
-
-
-    motorista.planos = motorista.planos.filter(
-        p => p.id !== planoId
-    );
-
-
-    motoristas[emailNormalizado] = motorista;
-
-    vlSalvarMotoristas(motoristas);
-
-}
-
-
-
-/* =====================================================
-DADOS DE DEMONSTRAÇÃO (primeiro acesso)
-=====================================================
-Preenche os 3 motoristas que já aparecem nos cards
-estáticos da página inicial, para que o botão
-"Consultar planos" funcione de verdade mesmo antes de
-qualquer cadastro novo.
-===================================================== */
-
-
-function vlSemearDadosIniciais() {
-
-    const motoristas = vlGetMotoristas();
-
-
-    if (Object.keys(motoristas).length > 0) {
-
-        return;
-
-    }
-
-
-    const demo = {
-
-        "charles@vanloc.com": {
-
-            nome: "Charles Fernando",
-
-            telefone: "(87) 90000-0001",
-
-            email: "charles@vanloc.com",
-
-            cpf: "",
-
-            modeloVan: "",
-
-            placaVan: "",
-
-            lugaresVan: "",
-
-            planos: [
-
-                {
-
-                    id: "p_demo_1",
-
-                    nome: "Plano Frequente",
-
-                    valor: 25,
-
-                    quantidade: 10,
-
-                    vantagens: [
-
-                        "Prioridade nas reservas",
-
-                        "Desconto nas viagens",
-
-                        "Atendimento prioritário"
-
-                    ]
-
-                },
-
-                {
-
-                    id: "p_demo_2",
-
-                    nome: "Plano Básico",
-
-                    valor: 20,
-
-                    quantidade: 4,
-
-                    vantagens: [
-
-                        "Reserva antecipada",
-
-                        "Suporte pela VANLOC"
-
-                    ]
-
-                }
-
-            ]
-
-        },
-
-
-        "joao@vanloc.com": {
-
-            nome: "João Martins",
-
-            telefone: "(87) 90000-0002",
-
-            email: "joao@vanloc.com",
-
-            cpf: "",
-
-            modeloVan: "",
-
-            placaVan: "",
-
-            lugaresVan: "",
-
-            planos: [
-
-                {
-
-                    id: "p_demo_3",
-
-                    nome: "Plano Mensal",
-
-                    valor: 22,
-
-                    quantidade: 8,
-
-                    vantagens: [
-
-                        "Vaga garantida",
-
-                        "Suporte pela VANLOC"
-
-                    ]
-
-                }
-
-            ]
-
-        },
-
-
-        "marcos@vanloc.com": {
-
-            nome: "Marcos Silva",
-
-            telefone: "(87) 90000-0003",
-
-            email: "marcos@vanloc.com",
-
-            cpf: "",
-
-            modeloVan: "",
-
-            placaVan: "",
-
-            lugaresVan: "",
-
-            planos: [
-
-                {
-
-                    id: "p_demo_4",
-
-                    nome: "Plano Premium",
-
-                    valor: 30,
-
-                    quantidade: 12,
-
-                    vantagens: [
-
-                        "Prioridade máxima",
-
-                        "Descontos especiais",
-
-                        "Benefícios exclusivos"
-
-                    ]
-
-                },
-
-                {
-
-                    id: "p_demo_5",
-
-                    nome: "Plano Econômico",
-
-                    valor: 20,
-
-                    quantidade: 4,
-
-                    vantagens: [
-
-                        "Ideal para viagens ocasionais"
-
-                    ]
-
-                }
-
-            ]
-
-        }
-
-    };
-
-
-    vlSalvarMotoristas(demo);
-
-
-    vlSalvarViagens([
-
-        {
-            id: "v_demo_1",
-            motoristaEmail: "charles@vanloc.com",
-            origem: "Serra Talhada",
-            destino: "Recife",
-            data: "2026-09-15",
-            horario: "06:30",
-            valor: 80,
-            vagas: 12,
-            criadaEm: Date.now()
-        },
-
-        {
-            id: "v_demo_2",
-            motoristaEmail: "joao@vanloc.com",
-            origem: "Recife",
-            destino: "Caruaru",
-            data: "2026-09-16",
-            horario: "08:00",
-            valor: 45,
-            vagas: 12,
-            criadaEm: Date.now()
-        },
-
-        {
-            id: "v_demo_3",
-            motoristaEmail: "marcos@vanloc.com",
-            origem: "Serra Talhada",
-            destino: "Petrolina",
-            data: "2026-09-17",
-            horario: "05:00",
-            valor: 100,
-            vagas: 12,
-            criadaEm: Date.now()
-        }
-
-    ]);
-
-}
-
-
-vlSemearDadosIniciais();
 
 
 /* =====================================================
@@ -810,12 +197,14 @@ MODAIS
 ===================================================== */
 
 
-function abrirLogin() {
+function abrirLogin(tipo) {
 
     const avisoReserva = document.getElementById("avisoLoginReserva");
     if (avisoReserva && !vlGetReservaPendente()) {
         avisoReserva.style.display = "none";
     }
+
+    vlDefinirTipoLogin(typeof tipo === "string" ? tipo : "passageiro");
 
     document.getElementById("modalLogin").style.display = "block";
 
@@ -834,6 +223,11 @@ function fecharLogin(cancelarReserva = false) {
 
 
 function abrirMotorista() {
+
+    if (vlMotoristaLogado()) {
+        window.location.href = "dashboard.html";
+        return;
+    }
 
     document.getElementById("modalMotorista").style.display = "block";
 
@@ -894,6 +288,9 @@ NOTIFICAÇÃO
 ===================================================== */
 
 
+let vlTimerNotificacao = null;
+
+
 function mostrarNotificacao(mensagem) {
 
     const notificacao =
@@ -902,13 +299,18 @@ function mostrarNotificacao(mensagem) {
     const texto =
         document.getElementById("mensagemNotificacao");
 
+    if (!notificacao || !texto) {
+        alert(mensagem);
+        return;
+    }
 
     texto.innerText = mensagem;
 
     notificacao.style.display = "flex";
 
+    clearTimeout(vlTimerNotificacao);
 
-    setTimeout(function() {
+    vlTimerNotificacao = setTimeout(function() {
 
         notificacao.style.display = "none";
 
@@ -917,15 +319,83 @@ function mostrarNotificacao(mensagem) {
 }
 
 
+/* Desabilita o botão de envio enquanto a API responde */
+function vlBotaoCarregando(formulario, carregando) {
+
+    const botao = formulario && formulario.querySelector("[type=submit]");
+
+    if (!botao) {
+        return;
+    }
+
+    if (carregando) {
+        botao.dataset.textoOriginal = botao.innerHTML;
+        botao.disabled = true;
+        botao.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Aguarde...';
+    } else {
+        botao.disabled = false;
+        if (botao.dataset.textoOriginal) {
+            botao.innerHTML = botao.dataset.textoOriginal;
+        }
+    }
+
+}
+
+
 
 /* =====================================================
-LOGIN
+LOGIN (PASSAGEIRO OU MOTORISTA)
 ===================================================== */
 
 
-/* =====================================================
-LOGIN + SESSÃO DO PASSAGEIRO
-===================================================== */
+function vlTipoLogin() {
+
+    const marcado = document.querySelector('input[name="tipoLogin"]:checked');
+
+    return marcado ? marcado.value : "passageiro";
+
+}
+
+
+function vlDefinirTipoLogin(tipo) {
+
+    const opcao = document.querySelector(
+        'input[name="tipoLogin"][value="' + tipo + '"]'
+    );
+
+    if (opcao) {
+        opcao.checked = true;
+    }
+
+    vlAtualizarTextosLogin();
+
+}
+
+
+function vlAtualizarTextosLogin() {
+
+    const motorista = vlTipoLogin() === "motorista";
+    const subtitulo = document.getElementById("loginSubtitulo");
+    const criarConta = document.getElementById("criarContaPassageiro");
+
+    if (subtitulo) {
+        subtitulo.innerText = motorista
+            ? "Acesse o seu Painel do Motorista"
+            : "Acesse sua conta de passageiro";
+    }
+
+    if (criarConta) {
+        criarConta.innerHTML = motorista
+            ? 'Ainda não é motorista na VANLOC? <a href="#" onclick="fecharLogin(); abrirMotorista(); return false;">Cadastre-se</a>'
+            : 'Ainda não possui uma conta? <a href="#passageiro" onclick="irParaCadastroPassageiro(event)">Criar conta</a>';
+    }
+
+}
+
+
+document.querySelectorAll('input[name="tipoLogin"]').forEach(function(opcao) {
+    opcao.addEventListener("change", vlAtualizarTextosLogin);
+});
 
 
 const vlFormLogin =
@@ -933,54 +403,52 @@ const vlFormLogin =
 
 if (vlFormLogin) {
 
-vlFormLogin.addEventListener("submit", function(event) {
+vlFormLogin.addEventListener("submit", async function(event) {
 
     event.preventDefault();
 
-    const email = vlNormalizarEmail(
-        document.getElementById("emailLogin").value
-    );
+    const formulario = this;
+    const tipo = vlTipoLogin();
 
-    const senha =
-        document.getElementById("senhaLogin").value;
+    vlBotaoCarregando(formulario, true);
 
-    const passageiro = vlGetPassageiro(email);
+    try {
 
-    if (!passageiro) {
+        const resposta = await vlApi("auth.php?acao=login", {
+            tipo: tipo,
+            email: document.getElementById("emailLogin").value,
+            senha: document.getElementById("senhaLogin").value
+        });
 
-        irParaCadastroPassageiro(null, email);
+        vlUsuario = resposta.usuario;
 
-        mostrarNotificacao(
-            "Faça seu cadastro de passageiro para continuar com a reserva."
-        );
+    } catch (erro) {
 
+        vlBotaoCarregando(formulario, false);
+        mostrarNotificacao(erro.message);
         return;
 
     }
 
-    if (passageiro.senha !== senha) {
-
-        mostrarNotificacao("Senha incorreta.");
-
-        return;
-
-    }
-
-    vlSalvarSessaoPassageiro(email);
-
+    vlBotaoCarregando(formulario, false);
+    formulario.reset();
     fecharLogin();
-
     atualizarHeaderPassageiro();
+
+    if (tipo === "motorista") {
+        vlLimparReservaPendente();
+        mostrarNotificacao("Login realizado! Abrindo seu painel...");
+        setTimeout(function() {
+            window.location.href = "dashboard.html";
+        }, 700);
+        return;
+    }
 
     const reservaPendente = vlGetReservaPendente();
 
     if (reservaPendente) {
 
-        reservar(
-            reservaPendente.viagem,
-            null,
-            reservaPendente.dadosViagem
-        );
+        reservar(reservaPendente.viagemId);
 
         mostrarNotificacao(
             "Login realizado. Você já pode confirmar sua reserva."
@@ -1014,26 +482,11 @@ const vlFormCadastroPassageiro =
 
 if (vlFormCadastroPassageiro) {
 
-vlFormCadastroPassageiro.addEventListener("submit", function(event) {
+vlFormCadastroPassageiro.addEventListener("submit", async function(event) {
 
     event.preventDefault();
 
-    const nome =
-        document.getElementById("passageiroNome").value.trim();
-
-    const email = vlNormalizarEmail(
-        document.getElementById("passageiroEmail").value
-    );
-
-    const telefone =
-        document.getElementById("passageiroTelefone").value.trim();
-
-    const cidade =
-        document.getElementById("passageiroCidade").value.trim();
-
-    const estado =
-        document.getElementById("passageiroEstado")?.value
-        .trim().toUpperCase() || "";
+    const formulario = this;
 
     const senha =
         document.getElementById("passageiroSenha").value;
@@ -1057,43 +510,41 @@ vlFormCadastroPassageiro.addEventListener("submit", function(event) {
 
     }
 
-    if (vlGetPassageiro(email)) {
+    vlBotaoCarregando(formulario, true);
 
-        mostrarNotificacao("Já existe uma conta com este email.");
+    try {
 
+        const resposta = await vlApi("auth.php?acao=cadastrar_passageiro", {
+            nome: document.getElementById("passageiroNome").value,
+            email: document.getElementById("passageiroEmail").value,
+            telefone: document.getElementById("passageiroTelefone").value,
+            cidade: document.getElementById("passageiroCidade").value,
+            estado: document.getElementById("passageiroEstado")?.value || "",
+            senha: senha
+        });
+
+        vlUsuario = resposta.usuario;
+
+    } catch (erro) {
+
+        vlBotaoCarregando(formulario, false);
+        mostrarNotificacao(erro.message);
         return;
 
     }
 
-    const passageiro = {
-
-        nome: nome,
-        email: email,
-        telefone: telefone,
-        cidade: cidade,
-        estado: estado,
-        foto: "",
-        bio: "",
-        criadoEm: Date.now(),
-        senha: senha
-
-    };
-
     const reservaPendente = vlGetReservaPendente();
-
-    vlSalvarPassageiro(passageiro);
-    vlSalvarSessaoPassageiro(email);
 
     mostrarNotificacao(
         "Cadastro realizado com sucesso! Abrindo sua conta..."
     );
 
-    this.reset();
+    formulario.reset();
 
     setTimeout(function() {
 
         window.location.href = reservaPendente
-            ? "index.html?retomarReserva=1"
+            ? "index.html?retomarReserva=1#viagens"
             : "dashboard-passageiro.html";
 
     }, 700);
@@ -1101,6 +552,170 @@ vlFormCadastroPassageiro.addEventListener("submit", function(event) {
 });
 
 }
+
+
+
+/* =====================================================
+VIAGENS (vindas da API)
+===================================================== */
+
+
+/* viagens carregadas na página, indexadas pelo id */
+const vlViagens = {};
+
+
+let vlViagensProntas = Promise.resolve();
+
+
+function vlCardViagem(v) {
+
+    const iniciais = escapeHtml(
+        String(v.motorista_nome || "")
+        .split(" ")
+        .map(palavra => palavra.charAt(0))
+        .slice(0, 2)
+        .join("")
+        .toUpperCase()
+    );
+
+    const lotada = v.vagas_restantes <= 0;
+
+    const imagem = v.foto
+        ? `<img loading="lazy" decoding="async" src="${escapeHtml(v.foto)}" alt="Van de ${escapeHtml(v.motorista_nome)}"
+                onerror="this.onerror=null;this.src='van.png';this.classList.add('img-fallback')">`
+        : `<img loading="lazy" decoding="async" src="van.webp" alt="Van de transporte" class="img-fallback">`;
+
+    return `
+
+        <div class="viagem-card" data-data="${escapeHtml(v.data)}" data-id="${v.id}">
+
+            <div class="imagem-van">
+
+                ${imagem}
+
+                <span class="disponivel${lotada ? " lotada" : ""}">
+                    ${lotada ? "Lotada" : v.vagas_restantes + (v.vagas_restantes === 1 ? " vaga" : " vagas")}
+                </span>
+
+            </div>
+
+
+            <div class="viagem-info">
+
+                <div class="motorista-info">
+
+                    <div class="avatar">${iniciais}</div>
+
+                    <div>
+
+                        <strong>${escapeHtml(v.motorista_nome)}</strong>
+
+                        <span>
+                            Motorista cadastrado
+                            <i class="fa-solid fa-circle-check"></i>
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <h3>
+                    ${escapeHtml(v.origem)}
+                    <i class="fa-solid fa-arrow-right"></i>
+                    ${escapeHtml(v.destino)}
+                </h3>
+
+
+                <div class="detalhes">
+
+                    <span>
+                        <i class="fa-solid fa-calendar"></i>
+                        ${formatarData(v.data)}
+                    </span>
+
+                    <span>
+                        <i class="fa-solid fa-clock"></i>
+                        ${escapeHtml(v.horario)}
+                    </span>
+
+                </div>
+
+
+                <div class="rodape-viagem">
+
+                    <div class="preco">
+
+                        <small>Viagem avulsa</small>
+
+                        <strong>R$ ${formatarMoeda(v.valor)}</strong>
+
+                        <small class="valor-minimo">
+                            Planos a partir de R$ 20,00/viagem
+                        </small>
+
+                    </div>
+
+
+                    <div class="botoes-viagem">
+
+                        <button class="btn-planos" onclick="consultarPlanos(${v.motorista_id})">
+                            <i class="fa-solid fa-tags"></i>
+                            Consultar planos
+                        </button>
+
+                        <button class="btn-reservar" onclick="reservar(${v.id})" ${lotada ? "disabled" : ""}>
+                            ${lotada ? "Lotada" : "Reservar"}
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    `;
+
+}
+
+
+async function vlCarregarViagens() {
+
+    const lista = document.getElementById("listaViagens");
+
+    if (!lista) {
+        return;
+    }
+
+    let viagens = [];
+
+    try {
+        viagens = (await vlApi("viagens.php")).viagens;
+    } catch (erro) {
+        lista.innerHTML =
+            '<div class="viagens-vazio"><i class="fa-solid fa-triangle-exclamation"></i> ' +
+            escapeHtml(erro.message) +
+            '</div>';
+        return;
+    }
+
+    viagens.forEach(function(v) {
+        vlViagens[v.id] = v;
+    });
+
+    lista.innerHTML = viagens.length
+        ? viagens.map(vlCardViagem).join("")
+        : '<div class="viagens-vazio">Nenhuma viagem disponível no momento. Volte em breve!</div>';
+
+}
+
+
+if (document.getElementById("listaViagens")) {
+    vlViagensProntas = vlCarregarViagens();
+}
+
 
 
 /* =====================================================
@@ -1111,15 +726,12 @@ RESERVA
 const VL_CHAVE_RESERVA_PENDENTE = "vanloc_reserva_pendente";
 
 
-function vlSalvarReservaPendente(viagem, dadosViagem) {
+function vlSalvarReservaPendente(viagemId) {
 
     try {
         sessionStorage.setItem(
             VL_CHAVE_RESERVA_PENDENTE,
-            JSON.stringify({
-                viagem: String(viagem || "").trim(),
-                dadosViagem: dadosViagem || {}
-            })
+            JSON.stringify({ viagemId: Number(viagemId) })
         );
     } catch (erro) {
         // A retomada é opcional se o navegador bloquear o armazenamento da sessão.
@@ -1135,7 +747,7 @@ function vlGetReservaPendente() {
             sessionStorage.getItem(VL_CHAVE_RESERVA_PENDENTE) || "null"
         );
 
-        return reserva && typeof reserva.viagem === "string" && reserva.viagem
+        return reserva && Number(reserva.viagemId) > 0
             ? reserva
             : null;
     } catch (erro) {
@@ -1184,88 +796,36 @@ function irParaCadastroPassageiro(event, email = "") {
 }
 
 
-function vlExtrairDadosViagem(viagem, botaoReserva, dadosSalvos) {
-
-    const partesRota = String(viagem || "").split(/\s+para\s+/i);
-    const dados = {
-        origem: (partesRota.shift() || "").trim(),
-        destino: partesRota.join(" para ").trim(),
-        data: "",
-        horario: "",
-        motoristaNome: "",
-        valor: null
-    };
-
-    const cartao = botaoReserva?.closest?.(".viagem-card");
-
-    if (cartao) {
-        const camposDetalhe = cartao.querySelectorAll(".detalhes span");
-        const motorista = cartao.querySelector(".motorista-info strong");
-        const preco = cartao.querySelector(".preco strong");
-
-        dados.data = camposDetalhe[0]?.innerText?.trim() || "";
-        dados.horario = camposDetalhe[1]?.innerText?.trim() || "";
-        dados.motoristaNome = motorista?.innerText?.trim() || "";
-
-        const textoPreco = (preco?.innerText || "")
-            .replace(/[^\d,.-]/g, "")
-            .replace(/\.(?=\d{3}(?:,|$))/g, "")
-            .replace(",", ".");
-        const valor = Number.parseFloat(textoPreco);
-
-        dados.valor = Number.isFinite(valor) ? valor : null;
-    }
-
-    return { ...dados, ...(dadosSalvos || {}) };
-
-}
-
-
-function vlRegistrarReserva(reserva) {
-
-    let reservas = [];
-
-    try {
-        const salvas = JSON.parse(localStorage.getItem("vanloc_reservas") || "[]");
-        reservas = Array.isArray(salvas) ? salvas : [];
-    } catch (erro) {
-        reservas = [];
-    }
-
-    reservas.unshift(reserva);
-    localStorage.setItem("vanloc_reservas", JSON.stringify(reservas));
-
-}
-
-
 let vlReservaEmAndamento = null;
 
 
-function reservar(viagem, botaoReserva = null, dadosSalvos = null) {
+function reservar(viagemId) {
 
-    const email = vlGetSessaoPassageiro();
-    const passageiro = email ? vlGetPassageiro(email) : null;
-    const dadosViagem = vlExtrairDadosViagem(
-        viagem,
-        botaoReserva,
-        dadosSalvos
-    );
+    const viagem = vlViagens[viagemId];
 
-    vlReservaEmAndamento = {
-        viagem: String(viagem || "").trim(),
-        dadosViagem: dadosViagem
-    };
+    if (!viagem) {
+        vlLimparReservaPendente();
+        mostrarNotificacao("Esta viagem não está mais disponível.");
+        return;
+    }
+
+    if (vlMotoristaLogado()) {
+        mostrarNotificacao("Você está logado como motorista. Saia e entre como passageiro para reservar.");
+        return;
+    }
+
+    const passageiro = vlPassageiroLogado();
 
     if (!passageiro) {
 
-        vlSalvarReservaPendente(viagem, dadosViagem);
+        vlSalvarReservaPendente(viagemId);
+
+        abrirLogin("passageiro");
 
         const aviso = document.getElementById("avisoLoginReserva");
         if (aviso) {
             aviso.style.display = "block";
         }
-
-        abrirLogin();
 
         return;
 
@@ -1273,23 +833,31 @@ function reservar(viagem, botaoReserva = null, dadosSalvos = null) {
 
     vlLimparReservaPendente();
 
+    vlReservaEmAndamento = viagem;
+
     document.getElementById("campoNomeReserva").value = passageiro.nome || "";
     document.getElementById("campoTelefoneReserva").value = passageiro.telefone || "";
+
+    const quantidade = document.getElementById("campoQuantidadeReserva");
+    quantidade.max = Math.min(20, viagem.vagas_restantes);
+    quantidade.value = 1;
 
     document
     .getElementById("modalReserva")
     .style.display = "block";
 
-
     document
     .getElementById("viagemSelecionada")
     .innerText =
-        "Você está reservando: " + viagem;
+        "Você está reservando: " + viagem.origem + " → " + viagem.destino +
+        " em " + formatarData(viagem.data) + " às " + viagem.horario +
+        " (R$ " + formatarMoeda(viagem.valor) + " por pessoa)";
 
 }
 
 
-document.addEventListener("DOMContentLoaded", function() {
+/* Retoma a reserva depois do cadastro (index.html?retomarReserva=1) */
+Promise.all([vlSessaoPronta, vlViagensProntas]).then(function() {
 
     const parametros = new URLSearchParams(window.location.search);
     const reservaPendente = vlGetReservaPendente();
@@ -1299,12 +867,13 @@ document.addEventListener("DOMContentLoaded", function() {
         reservaPendente &&
         document.getElementById("modalReserva")
     ) {
+        history.replaceState(null, "", window.location.pathname + "#viagens");
+        reservar(reservaPendente.viagemId);
+    }
+
+    if (parametros.get("login") === "motorista" && document.getElementById("modalLogin")) {
         history.replaceState(null, "", window.location.pathname);
-        reservar(
-            reservaPendente.viagem,
-            null,
-            reservaPendente.dadosViagem
-        );
+        abrirLogin("motorista");
     }
 
 });
@@ -1316,62 +885,53 @@ const vlFormReserva =
 if (vlFormReserva) {
 
 vlFormReserva
-.addEventListener("submit", function(event) {
+.addEventListener("submit", async function(event) {
 
     event.preventDefault();
 
+    const formulario = this;
 
-    vlLimparReservaPendente();
-
-
-    const email = vlGetSessaoPassageiro();
-    const passageiro = email ? vlGetPassageiro(email) : null;
-
-    if (!passageiro) {
+    if (!vlPassageiroLogado() || !vlReservaEmAndamento) {
         fecharReserva();
-        reservar(vlReservaEmAndamento?.viagem || "");
+        abrirLogin("passageiro");
         return;
     }
 
-    const dadosViagem = vlReservaEmAndamento?.dadosViagem || {};
-    const quantidade = Math.max(
-        1,
-        Number.parseInt(document.getElementById("campoQuantidadeReserva").value, 10) || 1
-    );
-    const valor = Number(dadosViagem.valor);
-    const reserva = {
-        id: "VNL-" + Date.now().toString(36).toUpperCase(),
-        email: vlNormalizarEmail(email),
-        nome: document.getElementById("campoNomeReserva").value.trim(),
-        telefone: document.getElementById("campoTelefoneReserva").value.trim(),
-        viagem: vlReservaEmAndamento?.viagem || "",
-        origem: dadosViagem.origem || "",
-        destino: dadosViagem.destino || "",
-        data: dadosViagem.data || "",
-        horario: dadosViagem.horario || "",
-        motoristaNome: dadosViagem.motoristaNome || "VANLOC",
-        quantidade: quantidade,
-        valor: Number.isFinite(valor) ? valor : null,
-        status: "Solicitada",
-        criadaEm: new Date().toISOString()
-    };
+    vlBotaoCarregando(formulario, true);
 
-    vlRegistrarReserva(reserva);
+    try {
 
+        const resposta = await vlApi("reservas.php?acao=criar", {
+            viagem_id: vlReservaEmAndamento.id,
+            nome: document.getElementById("campoNomeReserva").value,
+            telefone: document.getElementById("campoTelefoneReserva").value,
+            quantidade: Number.parseInt(
+                document.getElementById("campoQuantidadeReserva").value, 10
+            ) || 1
+        });
 
-    fecharReserva();
+        vlBotaoCarregando(formulario, false);
+        fecharReserva();
+        formulario.reset();
 
+        mostrarNotificacao(
+            "Reserva " + resposta.codigo + " enviada ao motorista! Acompanhe na sua conta."
+        );
 
-    mostrarNotificacao(
-        "Reserva registrada! Acompanhe os detalhes na sua dashboard."
-    );
+        setTimeout(function() {
+            window.location.href = "dashboard-passageiro.html#reservas";
+        }, 1200);
 
+    } catch (erro) {
 
-    this.reset();
+        vlBotaoCarregando(formulario, false);
+        mostrarNotificacao(erro.message);
 
-    setTimeout(function() {
-        window.location.href = "dashboard-passageiro.html#reservas";
-    }, 700);
+        if (erro.status === 409 || erro.status === 404) {
+            vlViagensProntas = vlCarregarViagens();
+        }
+
+    }
 
 });
 
@@ -1384,41 +944,45 @@ CONSULTAR PLANOS DE UM MOTORISTA
 ===================================================== */
 
 
-function consultarPlanos(motoristaEmail) {
+async function consultarPlanos(motoristaId) {
 
+    const lista =
+        document
+        .getElementById("listaPlanos");
 
-    const motorista =
-        vlGetMotorista(motoristaEmail);
+    document.getElementById("tituloPlanos").innerText = "Planos disponíveis";
+    document.getElementById("subtituloPlanos").innerText = "";
 
+    lista.innerHTML =
+        '<div class="plano-vazio"><i class="fa-solid fa-spinner fa-spin"></i><p>Carregando planos...</p></div>';
 
     document
     .getElementById("modalPlanos")
     .style.display = "block";
 
 
-    document
-    .getElementById("tituloPlanos")
-    .innerText =
-        motorista ?
-        "Planos de " + motorista.nome :
-        "Planos disponíveis";
+    let resposta;
+
+    try {
+        resposta = await vlApi("planos.php?motorista_id=" + encodeURIComponent(motoristaId));
+    } catch (erro) {
+        lista.innerHTML =
+            '<div class="plano-vazio"><i class="fa-solid fa-circle-info"></i><p>' +
+            escapeHtml(erro.message) + '</p></div>';
+        return;
+    }
 
 
-    document
-    .getElementById("subtituloPlanos")
-    .innerText =
-        motorista ?
-        "Planos criados por " + motorista.nome + "." :
-        "";
+    const motorista = resposta.motorista;
+
+    const planos = resposta.planos;
 
 
-    const planos =
-        vlGetPlanosOrdenados(motoristaEmail);
+    document.getElementById("tituloPlanos").innerText =
+        "Planos de " + motorista.nome;
 
-
-    const lista =
-        document
-        .getElementById("listaPlanos");
+    document.getElementById("subtituloPlanos").innerText =
+        "Planos criados por " + motorista.nome + ".";
 
 
     if (planos.length === 0) {
@@ -1461,12 +1025,7 @@ function consultarPlanos(motoristaEmail) {
 
                 ${
                     indice === 0 ?
-                    `
-                    <div class="mais-escolhido">
-                        PLANO MAIS COMPLETO
-                    </div>
-                    `
-                    :
+                    `<div class="mais-escolhido">PLANO MAIS COMPLETO</div>` :
                     ""
                 }
 
@@ -1474,26 +1033,18 @@ function consultarPlanos(motoristaEmail) {
 
                     <i class="fa-solid fa-tags"></i>
 
-                    <h3>
-                        ${escapeHtml(plano.nome)}
-                    </h3>
+                    <h3>${escapeHtml(plano.nome)}</h3>
 
                 </div>
 
 
                 <div class="preco-plano">
 
-                    <small>
-                        Valor por viagem
-                    </small>
+                    <small>Valor por viagem</small>
 
-                    <strong>
-                        R$ ${formatarMoeda(plano.valor)}
-                    </strong>
+                    <strong>R$ ${formatarMoeda(plano.valor)}</strong>
 
-                    <span>
-                        por viagem
-                    </span>
+                    <span>por viagem</span>
 
                 </div>
 
@@ -1501,29 +1052,23 @@ function consultarPlanos(motoristaEmail) {
                 <ul>
 
                     <li>
-
                         <i class="fa-solid fa-check"></i>
-
                         ${
                             plano.quantidade ?
-                            plano.quantidade + " viagens/mês"
-                            :
+                            plano.quantidade + " viagens/mês" :
                             "Quantidade personalizada"
                         }
-
                     </li>
 
                     ${
                         (plano.vantagens || [])
                         .map(function(vantagem) {
-
                             return `
                                 <li>
                                     <i class="fa-solid fa-check"></i>
                                     ${escapeHtml(vantagem)}
                                 </li>
                             `;
-
                         })
                         .join("")
                     }
@@ -1531,12 +1076,8 @@ function consultarPlanos(motoristaEmail) {
                 </ul>
 
 
-                <button
-                    onclick="assinarPlano('${escapeHtml(plano.nome)}')"
-                >
-
+                <button data-plano="${escapeHtml(plano.nome)}" onclick="assinarPlano(this.dataset.plano)">
                     Assinar plano
-
                 </button>
 
             </div>
@@ -1545,7 +1086,6 @@ function consultarPlanos(motoristaEmail) {
 
     })
     .join("");
-
 
 }
 
@@ -1558,9 +1098,18 @@ ASSINAR PLANO
 
 function assinarPlano(plano) {
 
-
     fecharPlanos();
 
+    if (vlPassageiroLogado()) {
+
+        mostrarNotificacao(
+            "Você escolheu o " + plano +
+            ". Reserve uma viagem com este motorista e combine a assinatura com ele."
+        );
+
+        return;
+
+    }
 
     mostrarNotificacao(
         "Você selecionou o " +
@@ -1568,10 +1117,9 @@ function assinarPlano(plano) {
         ". Faça login para continuar."
     );
 
-
     setTimeout(function() {
 
-        abrirLogin();
+        abrirLogin("passageiro");
 
     }, 1000);
 
@@ -1590,203 +1138,68 @@ const vlFormMotorista =
 if (vlFormMotorista) {
 
 vlFormMotorista
-.addEventListener("submit", function(event) {
+.addEventListener("submit", async function(event) {
 
     event.preventDefault();
 
+    const formulario = this;
 
-    const nome =
-        document
-        .getElementById("nomeMotorista")
-        .value;
+    const senha = document.getElementById("senhaMotorista").value;
 
-
-    const telefone =
-        document
-        .getElementById("telefoneMotorista")
-        .value;
-
-
-    const email =
-        document
-        .getElementById("emailMotorista")
-        .value;
-
-
-    const cpf =
-        document
-        .getElementById("cpfMotorista")
-        .value;
-
-
-    const modeloVan =
-        document
-        .getElementById("modeloVan")
-        .value;
-
-
-    const placaVan =
-        document
-        .getElementById("placaVan")
-        .value;
-
-
-    const lugaresVan =
-        document
-        .getElementById("lugaresVan")
-        .value;
-
-
-    const origem =
-        document
-        .getElementById("origem")
-        .value;
-
-
-    const destino =
-        document
-        .getElementById("destino")
-        .value;
-
-
-    const data =
-        document
-        .getElementById("dataViagem")
-        .value;
-
-
-    const horario =
-        document
-        .getElementById("horarioViagem")
-        .value;
-
-
-    const valor =
-        document
-        .getElementById("valorViagem")
-        .value;
-
-
-    const vagas =
-        document
-        .getElementById("vagasViagem")
-        .value;
-
-
-
-    /* =================================================
-    FOTO DA VAN
-    ================================================= */
-
-
-    const fotoInput =
-        document
-        .getElementById("fotoVan");
-
-
-    let fotoVan =
-        "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=800&q=80";
-
-
-    if (
-        fotoInput.files.length > 0
-    ) {
-
-        fotoVan =
-            URL.createObjectURL(
-                fotoInput.files[0]
-            );
-
+    if (senha !== document.getElementById("confirmarSenhaMotorista").value) {
+        mostrarNotificacao("As senhas não coincidem!");
+        return;
     }
 
+    if (senha.length < 6) {
+        mostrarNotificacao("A senha precisa ter pelo menos 6 caracteres.");
+        return;
+    }
 
+    const fotoInput = document.getElementById("fotoVan");
 
-    /* =================================================
-    SALVAR MOTORISTA E VIAGEM (localStorage)
-    ================================================= */
+    if (!vlImagemValida(fotoInput.files[0])) {
+        return;
+    }
 
+    const dados = new FormData();
 
-    vlSalvarMotorista({
+    dados.append("nome", document.getElementById("nomeMotorista").value);
+    dados.append("telefone", document.getElementById("telefoneMotorista").value);
+    dados.append("email", document.getElementById("emailMotorista").value);
+    dados.append("cpf", document.getElementById("cpfMotorista").value);
+    dados.append("senha", senha);
+    dados.append("modelo_van", document.getElementById("modeloVan").value);
+    dados.append("placa_van", document.getElementById("placaVan").value);
+    dados.append("lugares_van", document.getElementById("lugaresVan").value);
+    dados.append("origem", document.getElementById("origem").value);
+    dados.append("destino", document.getElementById("destino").value);
+    dados.append("data", document.getElementById("dataViagem").value);
+    dados.append("horario", document.getElementById("horarioViagem").value);
+    dados.append("valor", document.getElementById("valorViagem").value);
+    dados.append("vagas", document.getElementById("vagasViagem").value);
 
-        nome: nome,
+    if (fotoInput.files.length > 0) {
+        dados.append("foto", fotoInput.files[0]);
+    }
 
-        telefone: telefone,
+    vlBotaoCarregando(formulario, true);
 
-        email: email,
-
-        cpf: cpf,
-
-        modeloVan: modeloVan,
-
-        placaVan: placaVan,
-
-        lugaresVan: lugaresVan
-
-    });
-
-
-    vlAdicionarViagem({
-
-        motoristaEmail: email,
-
-        origem: origem,
-
-        destino: destino,
-
-        data: data,
-
-        horario: horario,
-
-        valor: valor,
-
-        vagas: vagas
-
-    });
-
-
-    vlSalvarSessaoMotorista(
-        email.trim().toLowerCase()
-    );
-
-
-
-    /* =================================================
-    MOSTRAR A NOVA VIAGEM NA PÁGINA
-    ================================================= */
-
-
-    adicionarViagem(
-
-        nome,
-
-        email,
-
-        origem,
-
-        destino,
-
-        data,
-
-        horario,
-
-        valor,
-
-        fotoVan
-
-    );
-
-
+    try {
+        vlUsuario = (await vlApi("auth.php?acao=cadastrar_motorista", dados)).usuario;
+    } catch (erro) {
+        vlBotaoCarregando(formulario, false);
+        mostrarNotificacao(erro.message);
+        return;
+    }
 
     fecharMotorista();
-
 
     mostrarNotificacao(
         "Cadastro realizado! Levando você ao seu Painel do Motorista..."
     );
 
-
-    this.reset();
-
+    formulario.reset();
 
     setTimeout(function() {
 
@@ -1799,232 +1212,24 @@ vlFormMotorista
 }
 
 
-
-/* =====================================================
-ADICIONAR VIAGEM
-===================================================== */
-
-
-function adicionarViagem(
-
-    nome,
-    email,
-    origem,
-    destino,
-    data,
-    horario,
-    valor,
-    foto
-
-) {
-
-
-    const lista =
-        document
-        .getElementById("listaViagens");
-
-
-    let iniciais =
-        nome
-        .split(" ")
-        .map(
-            palavra =>
-            palavra.charAt(0)
-        )
-        .slice(0, 2)
-        .join("")
-        .toUpperCase();
-
-    // Protege os textos digitados contra HTML malicioso
-    iniciais = escapeHtml(iniciais);
-    nome = escapeHtml(String(nome || ""));
-    origem = escapeHtml(String(origem || ""));
-    destino = escapeHtml(String(destino || ""));
-    horario = escapeHtml(String(horario || ""));
-    foto = escapeHtml(String(foto || "van.png"));
-
-
-
-    const novaViagem = `
-
-        <div class="viagem-card">
-
-            <div class="imagem-van">
-
-                <img
-                    src="${foto}"
-                    alt="Van cadastrada"
-                >
-
-                <span class="disponivel">
-
-                    Disponível
-
-                </span>
-
-            </div>
-
-
-            <div class="viagem-info">
-
-
-                <div class="motorista-info">
-
-                    <div class="avatar">
-
-                        ${iniciais}
-
-                    </div>
-
-
-                    <div>
-
-                        <strong>
-
-                            ${nome}
-
-                        </strong>
-
-
-                        <span>
-
-                            Motorista cadastrado
-
-                            <i
-                                class="fa-solid fa-circle-check"
-                            ></i>
-
-                        </span>
-
-                    </div>
-
-                </div>
-
-
-
-                <h3>
-
-                    ${origem}
-
-                    <i class="fa-solid fa-arrow-right"></i>
-
-                    ${destino}
-
-                </h3>
-
-
-
-                <div class="detalhes">
-
-
-                    <span>
-
-                        <i class="fa-solid fa-calendar"></i>
-
-                        ${formatarData(data)}
-
-                    </span>
-
-
-                    <span>
-
-                        <i class="fa-solid fa-clock"></i>
-
-                        ${horario}
-
-                    </span>
-
-
-                </div>
-
-
-
-                <div class="rodape-viagem">
-
-
-                    <div class="preco">
-
-
-                        <small>
-
-                            Viagem avulsa
-
-                        </small>
-
-
-                        <strong>
-
-                            R$ ${formatarMoeda(valor)}
-
-                        </strong>
-
-
-                        <small class="valor-minimo">
-
-                            Planos a partir de R$ 20,00/viagem
-
-                        </small>
-
-
-                    </div>
-
-
-
-                    <div class="botoes-viagem">
-
-
-                        <button
-                            class="btn-planos"
-                            onclick="consultarPlanos('${escapeHtml(email)}')"
-                        >
-
-                            <i class="fa-solid fa-tags"></i>
-
-                            Consultar planos
-
-                        </button>
-
-
-
-                        <button
-                            class="btn-reservar"
-                            onclick="reservar(
-                                '${escapeHtml(origem)} para ${escapeHtml(destino)}', this
-                            )"
-                        >
-
-                            Reservar
-
-                        </button>
-
-
-                    </div>
-
-
-                </div>
-
-
-            </div>
-
-
-        </div>
-
-    `;
-
-
-    lista.insertAdjacentHTML(
-        "afterbegin",
-        novaViagem
-    );
-
-
-    document
-    .getElementById("viagens")
-    .scrollIntoView({
-
-        behavior: "smooth"
-
-    });
+/* Confere tipo e tamanho antes de enviar (o servidor confere de novo) */
+function vlImagemValida(arquivo) {
+
+    if (!arquivo) {
+        return true;
+    }
+
+    if (!/^image\/(jpeg|png|webp)$/.test(arquivo.type)) {
+        mostrarNotificacao("Envie uma imagem JPG, PNG ou WEBP.");
+        return false;
+    }
+
+    if (arquivo.size > 3 * 1024 * 1024) {
+        mostrarNotificacao("A imagem deve ter no máximo 3 MB.");
+        return false;
+    }
+
+    return true;
 
 }
 
@@ -2037,7 +1242,6 @@ BUSCAR VIAGEM
 
 function buscarViagem() {
 
-
     const destino =
         document
         .getElementById("buscaDestino")
@@ -2045,48 +1249,33 @@ function buscarViagem() {
         .toLowerCase()
         .trim();
 
-
     const data =
         document
         .getElementById("buscaData")
         .value;
 
-
     const viagens =
         document
         .querySelectorAll(".viagem-card");
 
-
     let encontradas = 0;
 
-
     viagens.forEach(function(viagem) {
-
 
         const texto =
             viagem
             .innerText
             .toLowerCase();
 
-
         const destinoEncontrado =
             destino === "" ||
             texto.includes(destino);
 
-
-        const dataCard =
-            viagem.dataset.data;
-
-
         const dataEncontrada =
             data === "" ||
-            dataCard === data;
+            viagem.dataset.data === data;
 
-
-        if (
-            destinoEncontrado &&
-            dataEncontrada
-        ) {
+        if (destinoEncontrado && dataEncontrada) {
 
             viagem.style.display = "block";
 
@@ -2118,14 +1307,9 @@ function buscarViagem() {
             " viagem(ns) encontrada(s)!"
         );
 
-
         document
         .getElementById("viagens")
-        .scrollIntoView({
-
-            behavior: "smooth"
-
-        });
+        .scrollIntoView({ behavior: "smooth" });
 
     }
 
@@ -2144,39 +1328,26 @@ const vlBuscaDestino =
 if (vlBuscaDestino) {
 
 vlBuscaDestino
-.addEventListener(
-    "input",
-    function() {
+.addEventListener("input", function() {
 
-        if (this.value === "") {
+    if (this.value === "") {
 
-            const viagens =
-                document
-                .querySelectorAll(
-                    ".viagem-card"
-                );
-
-
-            viagens.forEach(
-                function(viagem) {
-
-                    viagem.style.display =
-                        "block";
-
-                }
-            );
-
-        }
+        document
+        .querySelectorAll(".viagem-card")
+        .forEach(function(viagem) {
+            viagem.style.display = "block";
+        });
 
     }
-);
+
+});
 
 }
 
 
 
 /* =====================================================
-FORMATAR DATA
+FORMATAÇÃO / PROTEÇÃO DE HTML
 ===================================================== */
 
 
@@ -2188,10 +1359,8 @@ function formatarData(data) {
 
     }
 
-
     const partes =
-        data.split("-");
-
+        String(data).split("-");
 
     return (
         partes[2] +
@@ -2204,37 +1373,24 @@ function formatarData(data) {
 }
 
 
-
-/* =====================================================
-FORMATAR MOEDA
-===================================================== */
-
-
 function formatarMoeda(valor) {
 
-    return Number(valor)
+    return Number(valor || 0)
         .toFixed(2)
         .replace(".", ",");
 
 }
 
 
-
-/* =====================================================
-PROTEGER HTML
-===================================================== */
-
-
 function escapeHtml(texto) {
 
-    if (!texto) {
+    if (texto === null || texto === undefined) {
 
         return "";
 
     }
 
-
-    return texto
+    return String(texto)
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;")
@@ -2242,6 +1398,7 @@ function escapeHtml(texto) {
         .replace(/'/g, "&#039;");
 
 }
+
 
 
 /* =====================================================
@@ -2253,7 +1410,19 @@ let vantagensEmEdicao = [];
 
 let planoEmEdicaoId = null;
 
-let emailMotoristaLogado = null;
+let painelViagens = [];
+
+let painelPlanos = [];
+
+let painelReservas = [];
+
+
+const VL_STATUS_RESERVA = {
+    solicitada: "Aguardando confirmação",
+    confirmada: "Confirmada",
+    recusada: "Recusada",
+    cancelada: "Cancelada pelo passageiro"
+};
 
 
 
@@ -2262,59 +1431,70 @@ INICIALIZAÇÃO / SESSÃO
 ===================================================== */
 
 
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", async function() {
 
     /* só executa a lógica do painel se este arquivo
     estiver sendo carregado dentro do dashboard.html */
 
-    const estaNoPainel =
-        document.getElementById("abaVisaoGeral");
-
-    if (!estaNoPainel) {
-
+    if (!document.getElementById("abaVisaoGeral")) {
         return;
-
     }
 
+    await vlSessaoPronta;
 
-    const email = vlGetSessaoMotorista();
-
-
-    if (!email) {
-
-        window.location.href = "index.html";
-
-        return;
-
-    }
-
-
-    const motorista = vlGetMotorista(email);
-
+    const motorista = vlMotoristaLogado();
 
     if (!motorista) {
-
-        window.location.href = "index.html";
-
+        window.location.href = "index.html?login=motorista";
         return;
-
     }
-
-
-    emailMotoristaLogado = email;
-
 
     document
     .getElementById("saudacaoMotorista")
     .innerText =
         "Olá, " + motorista.nome.split(" ")[0] + "!";
 
+    await painelRecarregar();
+
+    if (window.location.hash === "#reservas") {
+        mostrarAba("reservas");
+    }
+
+});
+
+
+async function painelRecarregar() {
+
+    try {
+
+        const [viagens, planos, reservas] = await Promise.all([
+            vlApi("viagens.php?acao=minhas"),
+            vlApi("planos.php?acao=meus"),
+            vlApi("reservas.php?acao=motorista")
+        ]);
+
+        painelViagens = viagens.viagens;
+        painelPlanos = planos.planos;
+        painelReservas = reservas.reservas;
+
+    } catch (erro) {
+
+        if (erro.status === 401 || erro.status === 403) {
+            window.location.href = "index.html?login=motorista";
+            return;
+        }
+
+        mostrarNotificacao(erro.message);
+
+    }
 
     atualizarVisaoGeral();
 
     renderizarPlanos();
 
-});
+    renderizarReservasMotorista();
+
+}
 
 
 
@@ -2325,8 +1505,7 @@ NAVEGAÇÃO ENTRE ABAS
 
 function mostrarAba(aba) {
 
-    const abas = ["visaoGeral", "planos"];
-
+    const abas = ["visaoGeral", "reservas", "planos"];
 
     abas.forEach(function(item) {
 
@@ -2340,7 +1519,6 @@ function mostrarAba(aba) {
             item === aba ? "block" : "none";
 
     });
-
 
     document
     .querySelectorAll(".painel-nav-item")
@@ -2364,9 +1542,7 @@ SAIR DO PAINEL
 
 function sairPainel() {
 
-    vlEncerrarSessaoMotorista();
-
-    window.location.href = "index.html";
+    vlSair();
 
 }
 
@@ -2377,60 +1553,47 @@ VISÃO GERAL
 ===================================================== */
 
 
+function vlHojeIso() {
+
+    const d = new Date();
+
+    return d.getFullYear() + "-" +
+        String(d.getMonth() + 1).padStart(2, "0") + "-" +
+        String(d.getDate()).padStart(2, "0");
+
+}
+
+
 function atualizarVisaoGeral() {
 
-    const viagens =
-        vlGetViagensDoMotorista(emailMotoristaLogado);
+    const hoje = vlHojeIso();
 
+    const ativas = painelViagens.filter(
+        v => v.status === "ativa" && v.data >= hoje
+    );
 
-    const motorista =
-        vlGetMotorista(emailMotoristaLogado);
+    const receitaConfirmada = painelReservas
+        .filter(r => r.status === "confirmada")
+        .reduce((total, r) => total + r.valor * r.quantidade, 0);
 
+    const pendentes = painelReservas
+        .filter(r => r.status === "solicitada").length;
 
-    const planos =
-        (motorista && motorista.planos) ?
-        motorista.planos :
-        [];
+    document.getElementById("statViagens").innerText = ativas.length;
 
+    document.getElementById("statReceita").innerText =
+        "R$ " + formatarMoeda(receitaConfirmada);
 
-    document
-    .getElementById("statViagens")
-    .innerText =
-        viagens.length;
+    document.getElementById("statPlanos").innerText =
+        painelPlanos.length + "/" + VANLOC_LIMITE_PLANOS;
 
+    document.getElementById("statPendentes").innerText = pendentes;
 
-    const receitaPotencial =
-        viagens.reduce(
-            (total, v) => total + Number(v.valor || 0),
-            0
-        );
-
-
-    document
-    .getElementById("statReceita")
-    .innerText =
-        "R$ " + formatarMoedaPainel(receitaPotencial);
-
-
-    document
-    .getElementById("statPlanos")
-    .innerText =
-        planos.length + "/" + VANLOC_LIMITE_PLANOS;
-
-
-    const ticketMedio =
-        planos.length > 0 ?
-        planos.reduce(
-            (total, p) => total + Number(p.valor || 0), 0
-        ) / planos.length
-        :
-        0;
-
-
-    document
-    .getElementById("statTicketMedio")
-    .innerText =
-        "R$ " + formatarMoedaPainel(ticketMedio);
+    const badge = document.getElementById("badgeReservas");
+    if (badge) {
+        badge.innerText = pendentes;
+        badge.style.display = pendentes > 0 ? "inline-flex" : "none";
+    }
 
 
     const lista =
@@ -2438,7 +1601,7 @@ function atualizarVisaoGeral() {
         .getElementById("listaViagensMotorista");
 
 
-    if (viagens.length === 0) {
+    if (painelViagens.length === 0) {
 
         lista.innerHTML = `
             <div class="viagens-vazio">
@@ -2451,34 +1614,39 @@ function atualizarVisaoGeral() {
     }
 
 
-    lista.innerHTML = viagens
-    .slice()
-    .reverse()
+    lista.innerHTML = painelViagens
     .map(function(v) {
+
+        const passou = v.data < hoje;
+        const cancelada = v.status === "cancelada";
+
+        const situacao = cancelada
+            ? '<em class="status-viagem cancelada">Cancelada</em>'
+            : passou
+                ? '<em class="status-viagem encerrada">Encerrada</em>'
+                : '<em class="status-viagem ativa">' + v.ocupadas + "/" + v.vagas + " vagas ocupadas</em>";
 
         return `
 
             <div class="linha-viagem">
 
                 <strong>
-
-                    ${escapeHtmlPainel(v.origem)}
+                    ${escapeHtml(v.origem)}
                     <i class="fa-solid fa-arrow-right"></i>
-                    ${escapeHtmlPainel(v.destino)}
-
+                    ${escapeHtml(v.destino)}
                 </strong>
 
-                <span>
+                <span>${formatarData(v.data)} • ${escapeHtml(v.horario)}</span>
 
-                    ${formatarDataPainel(v.data)} • ${v.horario}
+                <span>R$ ${formatarMoeda(v.valor)}</span>
 
-                </span>
+                ${situacao}
 
-                <span>
-
-                    R$ ${formatarMoedaPainel(v.valor)}
-
-                </span>
+                ${
+                    !cancelada && !passou
+                        ? `<button class="btn-remover-plano" onclick="cancelarViagem(${v.id})">Cancelar</button>`
+                        : ""
+                }
 
             </div>
 
@@ -2492,20 +1660,216 @@ function atualizarVisaoGeral() {
 
 
 /* =====================================================
+NOVA VIAGEM / CANCELAR VIAGEM
+===================================================== */
+
+
+function abrirFormViagem() {
+
+    const container = document.getElementById("formViagemContainer");
+
+    container.style.display = "block";
+
+    document.getElementById("novaViagemData").min = vlHojeIso();
+
+    container.scrollIntoView({ behavior: "smooth" });
+
+}
+
+
+function fecharFormViagem() {
+
+    document.getElementById("formViagemContainer").style.display = "none";
+
+    document.getElementById("formNovaViagem").reset();
+
+}
+
+
+const vlFormNovaViagem = document.getElementById("formNovaViagem");
+
+if (vlFormNovaViagem) {
+
+vlFormNovaViagem.addEventListener("submit", async function(event) {
+
+    event.preventDefault();
+
+    const formulario = this;
+    const foto = document.getElementById("novaViagemFoto").files[0];
+
+    if (!vlImagemValida(foto)) {
+        return;
+    }
+
+    const dados = new FormData();
+
+    dados.append("origem", document.getElementById("novaViagemOrigem").value);
+    dados.append("destino", document.getElementById("novaViagemDestino").value);
+    dados.append("data", document.getElementById("novaViagemData").value);
+    dados.append("horario", document.getElementById("novaViagemHorario").value);
+    dados.append("valor", document.getElementById("novaViagemValor").value);
+    dados.append("vagas", document.getElementById("novaViagemVagas").value);
+
+    if (foto) {
+        dados.append("foto", foto);
+    }
+
+    vlBotaoCarregando(formulario, true);
+
+    try {
+        await vlApi("viagens.php?acao=criar", dados);
+    } catch (erro) {
+        vlBotaoCarregando(formulario, false);
+        mostrarNotificacao(erro.message);
+        return;
+    }
+
+    vlBotaoCarregando(formulario, false);
+    fecharFormViagem();
+    await painelRecarregar();
+    mostrarNotificacao("Viagem cadastrada! Ela já aparece no site.");
+
+});
+
+}
+
+
+async function cancelarViagem(id) {
+
+    if (!confirm("Cancelar esta viagem? As reservas ativas serão recusadas automaticamente.")) {
+        return;
+    }
+
+    try {
+        await vlApi("viagens.php?acao=cancelar", { id: id });
+    } catch (erro) {
+        mostrarNotificacao(erro.message);
+        return;
+    }
+
+    await painelRecarregar();
+    mostrarNotificacao("Viagem cancelada.");
+
+}
+
+
+
+/* =====================================================
+RESERVAS RECEBIDAS
+===================================================== */
+
+
+function renderizarReservasMotorista() {
+
+    const lista = document.getElementById("listaReservasMotorista");
+
+    if (!lista) {
+        return;
+    }
+
+    if (painelReservas.length === 0) {
+
+        lista.innerHTML = `
+            <div class="viagens-vazio">
+                Nenhuma reserva recebida ainda. Assim que um
+                passageiro reservar uma das suas viagens, ela
+                aparece aqui.
+            </div>
+        `;
+
+        return;
+
+    }
+
+    lista.innerHTML = painelReservas
+    .map(function(r) {
+
+        const telefone = String(r.telefone || "").replace(/\D/g, "");
+
+        const acoes = [];
+
+        if (r.status === "solicitada") {
+            acoes.push(`<button class="btn-salvar-plano" onclick="alterarStatusReserva(${r.id}, 'confirmada')">Confirmar</button>`);
+        }
+
+        if (r.status === "solicitada" || r.status === "confirmada") {
+            acoes.push(`<button class="btn-remover-plano" onclick="alterarStatusReserva(${r.id}, 'recusada')">Recusar</button>`);
+        }
+
+        if (telefone) {
+            acoes.push(`<a class="btn-editar-plano" href="https://wa.me/55${escapeHtml(telefone)}" target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a>`);
+        }
+
+        return `
+
+            <div class="linha-reserva status-${escapeHtml(r.status)}">
+
+                <div>
+                    <strong>${escapeHtml(r.nome)}</strong>
+                    <span>${escapeHtml(r.telefone)} • ${r.quantidade} ${r.quantidade === 1 ? "passageiro" : "passageiros"}</span>
+                </div>
+
+                <div>
+                    <strong>
+                        ${escapeHtml(r.origem)}
+                        <i class="fa-solid fa-arrow-right"></i>
+                        ${escapeHtml(r.destino)}
+                    </strong>
+                    <span>${formatarData(r.data)} • ${escapeHtml(r.horario)} • Código ${escapeHtml(r.codigo)}</span>
+                </div>
+
+                <div>
+                    <em class="status-reserva ${escapeHtml(r.status)}">${VL_STATUS_RESERVA[r.status] || escapeHtml(r.status)}</em>
+                    <span>Total: R$ ${formatarMoeda(r.valor * r.quantidade)}</span>
+                </div>
+
+                <div class="plano-acoes">${acoes.join("")}</div>
+
+            </div>
+
+        `;
+
+    })
+    .join("");
+
+}
+
+
+async function alterarStatusReserva(id, status) {
+
+    if (status === "recusada" && !confirm("Recusar esta reserva?")) {
+        return;
+    }
+
+    try {
+        await vlApi("reservas.php?acao=status", { id: id, status: status });
+    } catch (erro) {
+        mostrarNotificacao(erro.message);
+        return;
+    }
+
+    await painelRecarregar();
+
+    mostrarNotificacao(
+        status === "confirmada" ? "Reserva confirmada!" : "Reserva recusada."
+    );
+
+}
+
+
+
+/* =====================================================
 RENDERIZAR PLANOS
 ===================================================== */
 
 
 function renderizarPlanos() {
 
-    const planos =
-        vlGetPlanosOrdenados(emailMotoristaLogado);
-
+    const planos = painelPlanos;
 
     const lista =
         document
         .getElementById("listaPlanosMotorista");
-
 
     const botaoNovo =
         document
@@ -2566,11 +1930,11 @@ function renderizarPlanos() {
 
                 <span class="badge-ordem">${rotulo}</span>
 
-                <h3>${escapeHtmlPainel(plano.nome)}</h3>
+                <h3>${escapeHtml(plano.nome)}</h3>
 
                 <div class="valor">
 
-                    R$ ${formatarMoedaPainel(plano.valor)}
+                    R$ ${formatarMoeda(plano.valor)}
                     <span>/ viagem</span>
 
                 </div>
@@ -2595,7 +1959,7 @@ function renderizarPlanos() {
                             return `
                                 <li>
                                     <i class="fa-solid fa-check"></i>
-                                    ${escapeHtmlPainel(vantagem)}
+                                    ${escapeHtml(vantagem)}
                                 </li>
                             `;
 
@@ -2609,14 +1973,14 @@ function renderizarPlanos() {
 
                     <button
                         class="btn-editar-plano"
-                        onclick="abrirFormPlano('${plano.id}')"
+                        onclick="abrirFormPlano(${plano.id})"
                     >
                         Editar
                     </button>
 
                     <button
                         class="btn-remover-plano"
-                        onclick="removerPlano('${plano.id}')"
+                        onclick="removerPlano(${plano.id})"
                     >
                         Remover
                     </button>
@@ -2641,18 +2005,14 @@ FORMULÁRIO DE PLANO
 
 function abrirFormPlano(planoId) {
 
-    const motorista =
-        vlGetMotorista(emailMotoristaLogado);
-
-
     const limiteAtingido =
         !planoId &&
-        motorista.planos.length >= VANLOC_LIMITE_PLANOS;
+        painelPlanos.length >= VANLOC_LIMITE_PLANOS;
 
 
     if (limiteAtingido) {
 
-        mostrarNotificacaoPainel(
+        mostrarNotificacao(
             "Você já atingiu o limite de " +
             VANLOC_LIMITE_PLANOS +
             " planos."
@@ -2668,7 +2028,7 @@ function abrirFormPlano(planoId) {
 
     const planoExistente =
         planoId ?
-        motorista.planos.find(p => p.id === planoId) :
+        painelPlanos.find(p => p.id === planoId) :
         null;
 
 
@@ -2677,23 +2037,20 @@ function abrirFormPlano(planoId) {
     .innerText =
         planoExistente ? "Editar plano" : "Novo plano";
 
-
     document
     .getElementById("inputNomePlano")
     .value =
         planoExistente ? planoExistente.nome : "";
-
 
     document
     .getElementById("inputValorPlano")
     .value =
         planoExistente ? planoExistente.valor : "";
 
-
     document
     .getElementById("inputQuantidadePlano")
     .value =
-        planoExistente ? planoExistente.quantidade : "";
+        planoExistente && planoExistente.quantidade ? planoExistente.quantidade : "";
 
 
     vantagensEmEdicao =
@@ -2709,7 +2066,6 @@ function abrirFormPlano(planoId) {
     .getElementById("formPlanoContainer")
     .style.display = "block";
 
-
     document
     .getElementById("formPlanoContainer")
     .scrollIntoView({ behavior: "smooth" });
@@ -2722,7 +2078,6 @@ function fecharFormPlano() {
     document
     .getElementById("formPlanoContainer")
     .style.display = "none";
-
 
     planoEmEdicaoId = null;
 
@@ -2737,16 +2092,13 @@ function adicionarVantagem() {
         document
         .getElementById("inputVantagem");
 
-
     const texto = input.value.trim();
-
 
     if (texto === "") {
 
         return;
 
     }
-
 
     vantagensEmEdicao.push(texto);
 
@@ -2772,7 +2124,6 @@ function renderizarVantagensForm() {
         document
         .getElementById("listaVantagens");
 
-
     lista.innerHTML = vantagensEmEdicao
     .map(function(vantagem, indice) {
 
@@ -2780,7 +2131,7 @@ function renderizarVantagensForm() {
 
             <li>
 
-                ${escapeHtmlPainel(vantagem)}
+                ${escapeHtml(vantagem)}
 
                 <button
                     type="button"
@@ -2799,7 +2150,7 @@ function renderizarVantagensForm() {
 }
 
 
-function salvarPlano() {
+async function salvarPlano() {
 
     const nome =
         document
@@ -2807,12 +2158,10 @@ function salvarPlano() {
         .value
         .trim();
 
-
     const valor =
         document
         .getElementById("inputValorPlano")
         .value;
-
 
     const quantidade =
         document
@@ -2822,7 +2171,7 @@ function salvarPlano() {
 
     if (nome === "" || valor === "") {
 
-        mostrarNotificacaoPainel(
+        mostrarNotificacao(
             "Preencha ao menos o nome e o valor do plano."
         );
 
@@ -2830,26 +2179,34 @@ function salvarPlano() {
 
     }
 
+    if (Number(valor) < VANLOC_VALOR_MINIMO_PLANO) {
 
-    const resultado =
-        vlSalvarPlano(emailMotoristaLogado, {
+        mostrarNotificacao(
+            "O valor mínimo do plano é R$ " +
+            formatarMoeda(VANLOC_VALOR_MINIMO_PLANO) +
+            " por viagem."
+        );
 
+        return;
+
+    }
+
+
+    try {
+
+        const resposta = await vlApi("planos.php?acao=salvar", {
             id: planoEmEdicaoId,
-
             nome: nome,
-
             valor: valor,
-
             quantidade: quantidade,
-
             vantagens: vantagensEmEdicao
-
         });
 
+        painelPlanos = resposta.planos;
 
-    if (!resultado.ok) {
+    } catch (erro) {
 
-        mostrarNotificacaoPainel(resultado.mensagem);
+        mostrarNotificacao(erro.message);
 
         return;
 
@@ -2862,95 +2219,32 @@ function salvarPlano() {
 
     atualizarVisaoGeral();
 
-
-    mostrarNotificacaoPainel("Plano salvo com sucesso!");
+    mostrarNotificacao("Plano salvo com sucesso!");
 
 }
 
 
-function removerPlano(planoId) {
+async function removerPlano(planoId) {
 
-    vlRemoverPlano(emailMotoristaLogado, planoId);
+    if (!confirm("Remover este plano?")) {
+        return;
+    }
+
+    try {
+        painelPlanos = (await vlApi("planos.php?acao=remover", { id: planoId })).planos;
+    } catch (erro) {
+        mostrarNotificacao(erro.message);
+        return;
+    }
 
     renderizarPlanos();
 
     atualizarVisaoGeral();
 
-    mostrarNotificacaoPainel("Plano removido.");
+    mostrarNotificacao("Plano removido.");
 
 }
 
-
-
-/* =====================================================
-UTILITÁRIOS
-===================================================== */
-
-
-function formatarMoedaPainel(valor) {
-
-    return Number(valor || 0)
-        .toFixed(2)
-        .replace(".", ",");
-
-}
-
-
-function formatarDataPainel(data) {
-
-    if (!data) {
-
-        return "";
-
-    }
-
-
-    const partes = data.split("-");
-
-    return partes[2] + "/" + partes[1] + "/" + partes[0];
-
-}
-
-
-function escapeHtmlPainel(texto) {
-
-    if (!texto) {
-
-        return "";
-
-    }
-
-    return String(texto)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-
-}
-
-
-function mostrarNotificacaoPainel(mensagem) {
-
-    const notificacao =
-        document.getElementById("notificacao");
-
-    const texto =
-        document.getElementById("mensagemNotificacao");
-
-
-    texto.innerText = mensagem;
-
-    notificacao.style.display = "flex";
-
-
-    setTimeout(function() {
-
-        notificacao.style.display = "none";
-
-    }, 4000);
-
-}
 
 
 /* =====================================================
@@ -3003,7 +2297,7 @@ document.addEventListener("DOMContentLoaded", function () {
         new MutationObserver(function () {
             atualizarModais();
             if (modal.style.display === "block") {
-                const campo = modal.querySelector("input:not([type=hidden]), button:not(.fechar)");
+                const campo = modal.querySelector("input:not([type=hidden]):not([type=radio]), button:not(.fechar)");
                 if (campo) setTimeout(function () { campo.focus(); }, 60);
             }
         }).observe(modal, { attributes: true, attributeFilter: ["style"] });
@@ -3043,6 +2337,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     aplicarMascara("passageiroTelefone", mascaraTelefone);
     aplicarMascara("telefoneMotorista", mascaraTelefone);
+    aplicarMascara("campoTelefoneReserva", mascaraTelefone);
+    aplicarMascara("dpTelefone", mascaraTelefone);
     aplicarMascara("cpfMotorista", mascaraCpf);
     aplicarMascara("placaVan", function (v) {
         return v.toUpperCase().replace(/[^A-Z0-9-]/g, "").slice(0, 8);
@@ -3050,14 +2346,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     /* ---------- Datas: não permitir dias passados ---------- */
 
-    const hoje = new Date();
-    const iso = hoje.getFullYear() + "-" +
-        String(hoje.getMonth() + 1).padStart(2, "0") + "-" +
-        String(hoje.getDate()).padStart(2, "0");
-
-    ["dataViagem", "buscaData"].forEach(function (id) {
+    ["dataViagem", "buscaData", "novaViagemData"].forEach(function (id) {
         const campo = document.getElementById(id);
-        if (campo) campo.min = iso;
+        if (campo) campo.min = vlHojeIso();
     });
 });
 
@@ -3108,60 +2399,3 @@ document.addEventListener("DOMContentLoaded", function () {
         aplicar(0, 0);
     });
 });
-
-
-/* =====================================================
-DATAS DAS VIAGENS DE DEMONSTRAÇÃO
-Viagens de exemplo com data já passada são atualizadas
-automaticamente para os próximos dias.
-===================================================== */
-
-function vlDataDaquiA(dias) {
-    const d = new Date();
-    d.setDate(d.getDate() + dias);
-    return d.getFullYear() + "-" +
-        String(d.getMonth() + 1).padStart(2, "0") + "-" +
-        String(d.getDate()).padStart(2, "0");
-}
-
-function vlAtualizarDatasDemo() {
-
-    const hoje = vlDataDaquiA(0);
-
-    // 1) Viagens de exemplo salvas no navegador
-    const viagens = vlGetViagens();
-    let alterou = false;
-    let indice = 0;
-
-    viagens.forEach(function (viagem) {
-        if (String(viagem.id || "").indexOf("v_demo_") === 0) {
-            indice++;
-            if (viagem.data && viagem.data < hoje) {
-                viagem.data = vlDataDaquiA(indice + 2);
-                alterou = true;
-            }
-        }
-    });
-
-    if (alterou) {
-        vlSalvarViagens(viagens);
-    }
-
-    // 2) Cartões de exemplo que já vêm escritos no index.html
-    let ordem = 0;
-
-    document.querySelectorAll(".viagem-card[data-data]").forEach(function (card) {
-        ordem++;
-        if (card.dataset.data < hoje) {
-            const nova = vlDataDaquiA(ordem + 2);
-            card.dataset.data = nova;
-
-            const campoData = card.querySelector(".detalhes span");
-            if (campoData && campoData.lastChild) {
-                campoData.lastChild.textContent = " " + formatarData(nova) + " ";
-            }
-        }
-    });
-}
-
-document.addEventListener("DOMContentLoaded", vlAtualizarDatasDemo);

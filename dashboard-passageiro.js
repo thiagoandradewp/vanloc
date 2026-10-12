@@ -1,20 +1,14 @@
 /* =====================================================
 VANLOC - DASHBOARD DO PASSAGEIRO
-Integração com localStorage do site principal.
+Usa a sessão e a API definidas em script.js.
 ===================================================== */
 
 function dpEscape(texto) {
-    return String(texto || "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+    return escapeHtml(texto);
 }
 
 function dpPassageiroAtual() {
-    const email = vlGetSessaoPassageiro();
-    return email ? vlGetPassageiro(email) : null;
+    return vlPassageiroLogado();
 }
 
 function dpMostrarAba(aba) {
@@ -39,7 +33,14 @@ function dpRenderAvatar(passageiro, classe) {
     return '<div class="' + classe + ' dp-avatar">' + dpEscape(dpInicial(passageiro.nome)) + '</div>';
 }
 
-function dpCarregar() {
+/* Busca de novo os dados do usuário logado no servidor */
+async function dpAtualizarSessao() {
+    const resposta = await vlApi("auth.php?acao=sessao");
+    vlUsuario = resposta.usuario || null;
+    return dpPassageiroAtual();
+}
+
+async function dpCarregar() {
     const passageiro = dpPassageiroAtual();
     if (!passageiro) {
         window.location.href = "index.html";
@@ -71,54 +72,57 @@ function dpCarregar() {
         '<div style="color:#667085;margin-top:3px">📍 ' + dpEscape(passageiro.cidade || "Localidade não informada") +
         (passageiro.estado ? ' - ' + dpEscape(passageiro.estado) : '') + '</div></div></div>';
 
+    await dpCarregarReservas();
+}
+
+async function dpCarregarReservas() {
     let reservas = [];
+
     try {
-        const todasReservas = JSON.parse(localStorage.getItem("vanloc_reservas") || "[]");
-        reservas = (Array.isArray(todasReservas) ? todasReservas : [])
-            .filter(function(item) {
-                return (item.email || "").toLowerCase() === (passageiro.email || "").toLowerCase();
-            })
-            .sort(function(a, b) {
-                return new Date(b.criadaEm || 0) - new Date(a.criadaEm || 0);
-            });
+        reservas = (await vlApi("reservas.php")).reservas;
     } catch (erro) {
-        reservas = [];
+        if (erro.status === 401 || erro.status === 403) {
+            window.location.href = "index.html";
+            return;
+        }
+        document.getElementById("dpListaReservas").innerHTML =
+            '<div class="dp-empty">' + dpEscape(erro.message) + '</div>';
+        return;
     }
+
+    const hoje = vlHojeIso();
+    const proximas = reservas.filter(function(r) {
+        return r.data >= hoje && (r.status === "solicitada" || r.status === "confirmada");
+    });
 
     document.getElementById("dpStatReservas").textContent = reservas.length;
     document.getElementById("dpListaReservas").innerHTML = reservas.length
         ? reservas.map(dpRenderReserva).join("")
         : '<div class="dp-empty">Você ainda não possui reservas. <br><br><a href="index.html#viagens" class="dp-btn" style="display:inline-block;text-decoration:none">Encontrar uma viagem</a></div>';
 
-    document.getElementById("dpProximasViagens").innerHTML = reservas.length
-        ? reservas.slice(0, 3).map(dpRenderReserva).join("")
-        : 'Você ainda não possui reservas registradas. <br><br><a href="index.html#viagens" class="dp-btn" style="display:inline-block;text-decoration:none">Encontrar viagem</a>';
+    document.getElementById("dpProximasViagens").innerHTML = proximas.length
+        ? proximas.slice(0, 3).map(dpRenderReserva).join("")
+        : 'Você não possui viagens futuras. <br><br><a href="index.html#viagens" class="dp-btn" style="display:inline-block;text-decoration:none">Encontrar viagem</a>';
 }
 
+const DP_STATUS = {
+    solicitada: { classe: "pendente", rotulo: "Aguardando o motorista" },
+    confirmada: { classe: "confirmada", rotulo: "Confirmada" },
+    recusada: { classe: "recusada", rotulo: "Recusada pelo motorista" },
+    cancelada: { classe: "cancelada", rotulo: "Cancelada por você" }
+};
+
 function dpRenderReserva(reserva) {
-    const status = reserva.status || "Solicitada";
-    const statusLower = status.toLowerCase();
-    const statusClass = statusLower.includes("confirm")
-        ? "confirmada"
-        : statusLower.includes("cancel")
-            ? "cancelada"
-            : "pendente";
-    const statusLabel = statusLower.includes("solicit")
-        ? "Reserva solicitada"
-        : status;
+    const status = DP_STATUS[reserva.status] || DP_STATUS.solicitada;
     const quantidade = Math.max(1, Number.parseInt(reserva.quantidade, 10) || 1);
-    const valor = Number(reserva.valor);
-    const temValor = Number.isFinite(valor) && valor > 0;
     const moeda = new Intl.NumberFormat("pt-BR", {
         style: "currency",
         currency: "BRL"
     });
-    const total = temValor ? moeda.format(valor * quantidade) : "A confirmar";
-    const unitario = temValor ? moeda.format(valor) : "A confirmar";
-    let realizadaEm = "Agora há pouco";
+    let realizadaEm = "";
 
-    if (reserva.criadaEm) {
-        const dataCriacao = new Date(reserva.criadaEm);
+    if (reserva.criado_em) {
+        const dataCriacao = new Date(String(reserva.criado_em).replace(" ", "T"));
         if (!Number.isNaN(dataCriacao.getTime())) {
             realizadaEm = dataCriacao.toLocaleString("pt-BR", {
                 dateStyle: "short",
@@ -127,26 +131,57 @@ function dpRenderReserva(reserva) {
         }
     }
 
-    const rota = reserva.origem || reserva.destino
-        ? dpEscape(reserva.origem || "Origem") + " → " + dpEscape(reserva.destino || "Destino")
-        : dpEscape(reserva.viagem || "Viagem reservada");
+    let aviso = "Aguarde a confirmação do motorista.";
+    if (reserva.status === "confirmada") {
+        aviso = "Reserva confirmada pelo motorista.";
+    } else if (reserva.status === "recusada") {
+        aviso = "O motorista não pôde aceitar esta reserva.";
+    } else if (reserva.status === "cancelada") {
+        aviso = "Você cancelou esta reserva.";
+    }
+
+    const acoes = [];
+    const telefone = String(reserva.motorista_telefone || "").replace(/\D/g, "");
+
+    if (telefone) {
+        acoes.push('<a class="dp-btn" style="text-decoration:none" target="_blank" rel="noopener" href="https://wa.me/55' +
+            dpEscape(telefone) + '"><i class="fa-brands fa-whatsapp"></i> Falar com o motorista</a>');
+    }
+    if (reserva.status === "solicitada" || reserva.status === "confirmada") {
+        acoes.push('<button type="button" class="dp-btn secondary" onclick="dpCancelarReserva(' +
+            Number(reserva.id) + ')">Cancelar reserva</button>');
+    }
 
     return '<article class="dp-trip">' +
         '<div class="dp-trip-topline">' +
-        '<span class="dp-chip dp-chip--' + statusClass + '">' + dpEscape(statusLabel) + '</span>' +
-        '<span class="dp-trip-code">Código: ' + dpEscape(reserva.id || "—") + '</span>' +
+        '<span class="dp-chip dp-chip--' + status.classe + '">' + dpEscape(status.rotulo) + '</span>' +
+        '<span class="dp-trip-code">Código: ' + dpEscape(reserva.codigo || "—") + '</span>' +
         '</div>' +
-        '<h3>' + rota + '</h3>' +
+        '<h3>' + dpEscape(reserva.origem) + " → " + dpEscape(reserva.destino) + '</h3>' +
         '<div class="dp-trip-details">' +
-        '<div><span>Data da viagem</span><strong>' + dpEscape(reserva.data || "Não informada") + '</strong></div>' +
-        '<div><span>Horário de saída</span><strong>' + dpEscape(reserva.horario || "Não informado") + '</strong></div>' +
-        '<div><span>Motorista</span><strong>' + dpEscape(reserva.motoristaNome || "VANLOC") + '</strong></div>' +
+        '<div><span>Data da viagem</span><strong>' + dpEscape(formatarData(reserva.data)) + '</strong></div>' +
+        '<div><span>Horário de saída</span><strong>' + dpEscape(reserva.horario) + '</strong></div>' +
+        '<div><span>Motorista</span><strong>' + dpEscape(reserva.motorista_nome || "VANLOC") + '</strong></div>' +
         '<div><span>Passageiros</span><strong>' + quantidade + (quantidade === 1 ? " pessoa" : " pessoas") + '</strong></div>' +
-        '<div><span>Valor por pessoa</span><strong>' + unitario + '</strong></div>' +
-        '<div><span>Total estimado</span><strong>' + total + '</strong></div>' +
+        '<div><span>Valor por pessoa</span><strong>' + moeda.format(reserva.valor) + '</strong></div>' +
+        '<div><span>Total</span><strong>' + moeda.format(reserva.valor * quantidade) + '</strong></div>' +
         '</div>' +
-        '<p class="dp-trip-created">Solicitada em ' + dpEscape(realizadaEm) + ' · Salva neste dispositivo. Confirme a disponibilidade diretamente com o motorista.</p>' +
+        '<p class="dp-trip-created">' + (realizadaEm ? 'Solicitada em ' + dpEscape(realizadaEm) + ' · ' : '') + dpEscape(aviso) + '</p>' +
+        (acoes.length ? '<div class="dp-trip-actions">' + acoes.join("") + '</div>' : '') +
         '</article>';
+}
+
+async function dpCancelarReserva(id) {
+    if (!confirm("Deseja cancelar esta reserva?")) return;
+
+    try {
+        await vlApi("reservas.php?acao=cancelar", { id: id });
+    } catch (erro) {
+        alert(erro.message);
+        return;
+    }
+
+    await dpCarregarReservas();
 }
 
 function dpAtualizarFotoPreview(passageiro) {
@@ -158,16 +193,23 @@ function dpAtualizarFotoPreview(passageiro) {
     }
 }
 
-function dpRemoverFoto() {
-    const passageiro = dpPassageiroAtual();
-    if (!passageiro) return;
-    passageiro.foto = "";
-    vlSalvarPassageiro(passageiro);
+async function dpRemoverFoto() {
+    if (!dpPassageiroAtual()) return;
+
+    try {
+        await vlApi("perfil.php?acao=remover_foto", {});
+        await dpAtualizarSessao();
+    } catch (erro) {
+        alert(erro.message);
+        return;
+    }
+
     dpCarregar();
 }
 
-document.addEventListener("DOMContentLoaded", function() {
-    dpCarregar();
+document.addEventListener("DOMContentLoaded", async function() {
+    await vlSessaoPronta;
+    await dpCarregar();
 
     if (window.location.hash === "#reservas") {
         dpMostrarAba("reservas");
@@ -175,43 +217,59 @@ document.addEventListener("DOMContentLoaded", function() {
 
     const inputFoto = document.getElementById("dpFotoInput");
     if (inputFoto) {
-        inputFoto.addEventListener("change", function() {
+        inputFoto.addEventListener("change", async function() {
             const arquivo = this.files && this.files[0];
             if (!arquivo) return;
-            if (!arquivo.type.startsWith("image/")) {
-                alert("Escolha uma imagem válida.");
+            if (!/^image\/(jpeg|png|webp)$/.test(arquivo.type)) {
+                alert("Escolha uma imagem JPG, PNG ou WEBP.");
                 this.value = "";
                 return;
             }
-            if (arquivo.size > 2 * 1024 * 1024) {
-                alert("Escolha uma imagem de até 2 MB para este MVP.");
+            if (arquivo.size > 3 * 1024 * 1024) {
+                alert("Escolha uma imagem de até 3 MB.");
                 this.value = "";
                 return;
             }
-            const leitor = new FileReader();
-            leitor.onload = function(event) {
-                const passageiro = dpPassageiroAtual();
-                if (!passageiro) return;
-                passageiro.foto = event.target.result;
-                vlSalvarPassageiro(passageiro);
-                dpCarregar();
-            };
-            leitor.readAsDataURL(arquivo);
+
+            const dados = new FormData();
+            dados.append("foto", arquivo);
+
+            try {
+                await vlApi("perfil.php?acao=foto", dados);
+                await dpAtualizarSessao();
+            } catch (erro) {
+                alert(erro.message);
+            }
+
+            this.value = "";
+            dpCarregar();
         });
     }
 
     const form = document.getElementById("dpFormPerfil");
     if (form) {
-        form.addEventListener("submit", function(event) {
+        form.addEventListener("submit", async function(event) {
             event.preventDefault();
-            const passageiro = dpPassageiroAtual();
-            if (!passageiro) return;
-            passageiro.nome = document.getElementById("dpNome").value.trim();
-            passageiro.telefone = document.getElementById("dpTelefone").value.trim();
-            passageiro.cidade = document.getElementById("dpCidade").value.trim();
-            passageiro.estado = document.getElementById("dpEstado").value.trim().toUpperCase();
-            passageiro.bio = document.getElementById("dpBio").value.trim();
-            vlSalvarPassageiro(passageiro);
+            if (!dpPassageiroAtual()) return;
+
+            vlBotaoCarregando(form, true);
+
+            try {
+                await vlApi("perfil.php?acao=salvar", {
+                    nome: document.getElementById("dpNome").value,
+                    telefone: document.getElementById("dpTelefone").value,
+                    cidade: document.getElementById("dpCidade").value,
+                    estado: document.getElementById("dpEstado").value,
+                    bio: document.getElementById("dpBio").value
+                });
+                await dpAtualizarSessao();
+            } catch (erro) {
+                vlBotaoCarregando(form, false);
+                alert(erro.message);
+                return;
+            }
+
+            vlBotaoCarregando(form, false);
             dpCarregar();
             alert("Perfil atualizado com sucesso!");
         });
@@ -219,6 +277,5 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 
 function dpSair() {
-    vlEncerrarSessaoPassageiro();
-    window.location.href = "index.html";
+    vlSair();
 }

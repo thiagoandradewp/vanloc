@@ -1,0 +1,4 @@
+# Só os endpoints podem ser acessados diretamente
+<FilesMatch "^(bootstrap|config|config\.example)\.php$">
+    Require all denied
+</FilesMatch>

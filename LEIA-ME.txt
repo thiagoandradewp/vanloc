@@ -1,9 +1,0 @@
-VANLOC - Dashboard do Passageiro
-
-Arquivos: index.html, style.css, script.js, dashboard-passageiro.html, dashboard-passageiro.css, dashboard-passageiro.js.
-
-Substitua os arquivos correspondentes no GitHub. A imagem da van deve ficar na raiz com o nome van.png.
-
-Fluxo: cadastro de passageiro -> sessão salva -> dashboard-passageiro.html -> edição de perfil/foto/localidade -> foto/nome aparecem no botão de conta do index.html.
-
-IMPORTANTE: este é um MVP front-end. As contas e senhas ficam no localStorage do navegador e não devem ser usadas assim em produção. Para produção, use backend, banco de dados e autenticação segura.
