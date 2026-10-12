@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="theme-color" content="#2563eb">
+    <title>Administração | VANLOC</title>
+
+    <link rel="icon" href="favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+
+    <link rel="stylesheet" href="style.css">
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    >
+
+</head>
+
+
+<body class="corpo-painel">
+
+
+<!-- =====================================================
+ACESSO (login / instalação)
+===================================================== -->
+
+<div id="adminAcesso" class="admin-acesso" style="display:none">
+
+    <div class="admin-acesso-card">
+
+        <div class="painel-logo admin-acesso-logo">
+            <i class="fa-solid fa-van-shuttle"></i>
+            <span>VAN<span class="destaque">LOC</span></span>
+        </div>
+
+        <!-- Login -->
+
+        <form id="formAdminLogin" style="display:none">
+
+            <h1>Administração</h1>
+            <p class="subtitulo">Entre com sua conta de administrador.</p>
+
+            <label for="adminEmail">Email</label>
+            <input type="email" id="adminEmail" autocomplete="username" required>
+
+            <label for="adminSenha">Senha</label>
+            <input type="password" id="adminSenha" autocomplete="current-password" required>
+
+            <button type="submit" class="btn-salvar-plano">Entrar</button>
+
+        </form>
+
+        <!-- Primeiro acesso -->
+
+        <form id="formAdminInstalar" style="display:none">
+
+            <h1>Criar administrador</h1>
+            <p class="subtitulo">
+                Primeiro acesso ao painel. Informe a chave de instalação
+                definida em <code>api/config.php</code>.
+            </p>
+
+            <label for="instalarChave">Chave de instalação</label>
+            <input type="password" id="instalarChave" autocomplete="off" required>
+
+            <label for="instalarNome">Seu nome</label>
+            <input type="text" id="instalarNome" maxlength="120" required>
+
+            <label for="instalarEmail">Email</label>
+            <input type="email" id="instalarEmail" autocomplete="username" required>
+
+            <label for="instalarSenha">Senha (mínimo 8 caracteres)</label>
+            <input type="password" id="instalarSenha" minlength="8" autocomplete="new-password" required>
+
+            <button type="submit" class="btn-salvar-plano">Criar e entrar</button>
+
+        </form>
+
+        <a class="admin-voltar" href="index.html">
+            <i class="fa-solid fa-arrow-left"></i>
+            Voltar ao site
+        </a>
+
+    </div>
+
+</div>
+
+
+
+<!-- =====================================================
+PAINEL
+===================================================== -->
+
+<div id="adminPainel" class="painel-wrapper" style="display:none">
+
+
+    <aside class="painel-sidebar">
+
+        <div class="painel-logo">
+            <i class="fa-solid fa-van-shuttle"></i>
+            <span>VAN<span class="destaque">LOC</span></span>
+        </div>
+
+        <p class="painel-logo-legenda">Administração</p>
+
+        <nav class="painel-nav">
+
+            <button class="painel-nav-item ativo" data-aba="resumo" onclick="adminAba('resumo')">
+                <i class="fa-solid fa-chart-line"></i>
+                Visão geral
+            </button>
+
+            <button class="painel-nav-item" data-aba="reservas" onclick="adminAba('reservas')">
+                <i class="fa-solid fa-ticket"></i>
+                Reservas
+                <span id="adminBadgePendentes" class="badge-contador" style="display:none">0</span>
+            </button>
+
+            <button class="painel-nav-item" data-aba="viagens" onclick="adminAba('viagens')">
+                <i class="fa-solid fa-route"></i>
+                Viagens
+            </button>
+
+            <button class="painel-nav-item" data-aba="motoristas" onclick="adminAba('motoristas')">
+                <i class="fa-solid fa-id-card"></i>
+                Motoristas
+            </button>
+
+            <button class="painel-nav-item" data-aba="passageiros" onclick="adminAba('passageiros')">
+                <i class="fa-solid fa-users"></i>
+                Passageiros
+            </button>
+
+            <button class="painel-nav-item" data-aba="admins" onclick="adminAba('admins')">
+                <i class="fa-solid fa-user-shield"></i>
+                Administradores
+            </button>
+
+        </nav>
+
+        <div class="painel-sidebar-rodape">
+
+            <a href="index.html" target="_blank" rel="noopener">
+                <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                Ver o site
+            </a>
+
+            <button onclick="adminSair()">
+                <i class="fa-solid fa-right-from-bracket"></i>
+                Sair
+            </button>
+
+        </div>
+
+    </aside>
+
+
+
+    <main class="painel-conteudo">
+
+        <header class="painel-topo">
+            <div>
+                <h1 id="adminSaudacao">Olá!</h1>
+                <p>Acompanhe e gerencie toda a plataforma VANLOC.</p>
+            </div>
+        </header>
+
+
+        <!-- =================================================
+        VISÃO GERAL
+        ================================================= -->
+
+        <section id="adminAbaResumo" class="painel-aba">
+
+            <div class="stats-grid">
+
+                <div class="stat-card">
+                    <i class="fa-solid fa-users"></i>
+                    <div>
+                        <strong id="resPassageiros">0</strong>
+                        <span id="resPassageirosNovos">Passageiros</span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <i class="fa-solid fa-id-card"></i>
+                    <div>
+                        <strong id="resMotoristas">0</strong>
+                        <span id="resMotoristasNovos">Motoristas</span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <i class="fa-solid fa-route"></i>
+                    <div>
+                        <strong id="resViagens">0</strong>
+                        <span>Viagens ativas</span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <i class="fa-solid fa-sack-dollar"></i>
+                    <div>
+                        <strong id="resReceita">R$ 0,00</strong>
+                        <span>Em reservas confirmadas</span>
+                    </div>
+                </div>
+
+            </div>
+
+
+            <div class="admin-duas-colunas">
+
+                <div class="painel-card">
+                    <h2>Reservas por status</h2>
+                    <div id="resStatus" class="admin-barras"></div>
+                </div>
+
+                <div class="painel-card">
+                    <h2>Rotas mais procuradas</h2>
+                    <div id="resRotas"></div>
+                </div>
+
+            </div>
+
+
+            <div class="painel-card">
+                <h2>Últimas reservas</h2>
+                <div id="resUltimas" class="admin-tabela-wrap"></div>
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+        RESERVAS
+        ================================================= -->
+
+        <section id="adminAbaReservas" class="painel-aba" style="display:none">
+
+            <div class="painel-card">
+
+                <div class="admin-filtros">
+                    <h2>Reservas</h2>
+                    <input type="search" id="filtroReservasQ" placeholder="Código, passageiro, motorista ou cidade">
+                    <select id="filtroReservasStatus">
+                        <option value="">Todos os status</option>
+                        <option value="solicitada">Aguardando motorista</option>
+                        <option value="confirmada">Confirmadas</option>
+                        <option value="recusada">Recusadas</option>
+                        <option value="cancelada">Canceladas</option>
+                    </select>
+                </div>
+
+                <div id="listaAdminReservas" class="admin-tabela-wrap"></div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+        VIAGENS
+        ================================================= -->
+
+        <section id="adminAbaViagens" class="painel-aba" style="display:none">
+
+            <div class="painel-card">
+
+                <div class="admin-filtros">
+                    <h2>Viagens</h2>
+                    <input type="search" id="filtroViagensQ" placeholder="Origem, destino ou motorista">
+                    <select id="filtroViagensStatus">
+                        <option value="">Todas</option>
+                        <option value="ativa" selected>Ativas</option>
+                        <option value="encerrada">Encerradas</option>
+                        <option value="cancelada">Canceladas</option>
+                    </select>
+                </div>
+
+                <div id="listaAdminViagens" class="admin-tabela-wrap"></div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+        MOTORISTAS
+        ================================================= -->
+
+        <section id="adminAbaMotoristas" class="painel-aba" style="display:none">
+
+            <div class="painel-card">
+
+                <div class="admin-filtros">
+                    <h2>Motoristas</h2>
+                    <input type="search" id="filtroMotoristasQ" placeholder="Nome, email, telefone ou placa">
+                </div>
+
+                <div id="listaAdminMotoristas" class="admin-tabela-wrap"></div>
+
+                <p class="painel-obs">
+                    <i class="fa-solid fa-circle-info"></i>
+                    Um motorista bloqueado não consegue entrar no painel
+                    e as viagens dele deixam de aparecer no site.
+                </p>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+        PASSAGEIROS
+        ================================================= -->
+
+        <section id="adminAbaPassageiros" class="painel-aba" style="display:none">
+
+            <div class="painel-card">
+
+                <div class="admin-filtros">
+                    <h2>Passageiros</h2>
+                    <input type="search" id="filtroPassageirosQ" placeholder="Nome, email, telefone ou cidade">
+                </div>
+
+                <div id="listaAdminPassageiros" class="admin-tabela-wrap"></div>
+
+                <p class="painel-obs">
+                    <i class="fa-solid fa-circle-info"></i>
+                    Um passageiro bloqueado não consegue entrar nem fazer reservas.
+                </p>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+        ADMINISTRADORES
+        ================================================= -->
+
+        <section id="adminAbaAdmins" class="painel-aba" style="display:none">
+
+            <div class="painel-card">
+                <h2>Administradores</h2>
+                <div id="listaAdmins" class="admin-tabela-wrap"></div>
+            </div>
+
+            <div class="admin-duas-colunas">
+
+                <form id="formNovoAdmin" class="form-plano-card">
+
+                    <h3>Novo administrador</h3>
+
+                    <label for="novoAdminNome">Nome</label>
+                    <input type="text" id="novoAdminNome" maxlength="120" required>
+
+                    <label for="novoAdminEmail">Email</label>
+                    <input type="email" id="novoAdminEmail" required>
+
+                    <label for="novoAdminSenha">Senha (mínimo 8 caracteres)</label>
+                    <input type="password" id="novoAdminSenha" minlength="8" autocomplete="new-password" required>
+
+                    <div class="form-plano-botoes">
+                        <button type="submit" class="btn-salvar-plano">Adicionar</button>
+                    </div>
+
+                </form>
+
+                <form id="formSenhaAdmin" class="form-plano-card">
+
+                    <h3>Alterar minha senha</h3>
+
+                    <label for="senhaAtualAdmin">Senha atual</label>
+                    <input type="password" id="senhaAtualAdmin" autocomplete="current-password" required>
+
+                    <label for="senhaNovaAdmin">Nova senha (mínimo 8 caracteres)</label>
+                    <input type="password" id="senhaNovaAdmin" minlength="8" autocomplete="new-password" required>
+
+                    <label for="senhaConfirmaAdmin">Confirme a nova senha</label>
+                    <input type="password" id="senhaConfirmaAdmin" minlength="8" autocomplete="new-password" required>
+
+                    <div class="form-plano-botoes">
+                        <button type="submit" class="btn-salvar-plano">Alterar senha</button>
+                    </div>
+
+                </form>
+
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+
+
+<!-- =====================================================
+NOTIFICAÇÃO
+===================================================== -->
+
+<div id="notificacao" class="notificacao">
+    <i class="fa-solid fa-circle-check"></i>
+    <span id="mensagemNotificacao"></span>
+</div>
+
+
+<script src="script.js"></script>
+<script src="admin.js"></script>
+
+</body>
+
+</html>

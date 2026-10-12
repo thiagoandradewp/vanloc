@@ -22,4 +22,9 @@ return [
     // Deixe false em produção. true mostra a mensagem
     // de erro real na resposta da API (só para testes).
     'debug' => false,
+
+    // Chave usada UMA VEZ para criar o primeiro administrador
+    // em /admin.html. Troque por uma frase longa e secreta.
+    // Depois de criar o administrador, pode deixar vazio ('').
+    'admin_chave_instalacao' => 'TROQUE_POR_UMA_CHAVE_SECRETA',
 ];

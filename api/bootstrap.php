@@ -125,12 +125,38 @@ function exigirLogin(string $tipo): int
         erro('Faça login para continuar.', 401);
     }
     if ($usuario['tipo'] !== $tipo) {
-        erro($tipo === 'motorista'
-            ? 'Esta área é exclusiva para motoristas.'
-            : 'Esta área é exclusiva para passageiros.', 403);
+        $mensagens = [
+            'motorista' => 'Esta área é exclusiva para motoristas.',
+            'passageiro' => 'Esta área é exclusiva para passageiros.',
+            'admin' => 'Acesso restrito aos administradores.',
+        ];
+        erro($mensagens[$tipo] ?? 'Acesso negado.', 403);
     }
 
-    return (int) $usuario['id'];
+    $id = (int) $usuario['id'];
+
+    if (contaBloqueada($tipo, $id)) {
+        encerrarSessao();
+        erro('Sua conta está bloqueada. Fale com o suporte da VANLOC.', 403);
+    }
+
+    return $id;
+}
+
+/** true se a conta foi bloqueada pelo administrador (ou não existe mais) */
+function contaBloqueada(string $tipo, int $id): bool
+{
+    $tabelas = [
+        'motorista' => 'SELECT bloqueado FROM motoristas WHERE id = ?',
+        'passageiro' => 'SELECT bloqueado FROM passageiros WHERE id = ?',
+        'admin' => 'SELECT 0 FROM administradores WHERE id = ?',
+    ];
+
+    $consulta = db()->prepare($tabelas[$tipo]);
+    $consulta->execute([$id]);
+    $bloqueado = $consulta->fetchColumn();
+
+    return $bloqueado === false || (int) $bloqueado === 1;
 }
 
 

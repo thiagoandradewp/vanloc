@@ -39,7 +39,7 @@ switch (acao()) {
             erro('Motorista inválido.');
         }
 
-        $consulta = db()->prepare('SELECT id, nome FROM motoristas WHERE id = ?');
+        $consulta = db()->prepare('SELECT id, nome FROM motoristas WHERE id = ? AND bloqueado = 0');
         $consulta->execute([$motoristaId]);
         $motorista = $consulta->fetch();
 

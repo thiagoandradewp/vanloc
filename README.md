@@ -25,6 +25,13 @@ Funciona na hospedagem compartilhada da Hostinger sem nenhuma instalação extra
 - Confirmar ou recusar reservas e falar com o passageiro pelo WhatsApp
 - Até 3 planos mensais (mínimo de R$ 20,00 por viagem)
 
+**Administração** (`/admin.html`)
+- Visão geral: passageiros, motoristas, viagens ativas, receita confirmada, reservas por status e rotas mais procuradas
+- Reservas: busca, filtro por status, confirmar / recusar / cancelar
+- Viagens: busca, filtro (ativas, encerradas, canceladas) e cancelamento
+- Motoristas e passageiros: busca, bloquear / desbloquear e excluir conta
+- Administradores: adicionar e remover administradores e trocar a própria senha
+
 ## Publicar na Hostinger
 
 1. **Criar o banco de dados**
@@ -45,7 +52,8 @@ Funciona na hospedagem compartilhada da Hostinger sem nenhuma instalação extra
 4. **Configurar a conexão**
    Em `public_html/api/`, copie `config.example.php` para `config.php` e
    preencha `db_name`, `db_user` e `db_pass`. O `db_host` normalmente é
-   `localhost`.
+   `localhost`. Defina também `admin_chave_instalacao` com uma frase longa
+   e secreta (mínimo 12 caracteres).
 
 5. **PHP e SSL**
    - *Avançado → Configuração do PHP*: use PHP **8.1 ou superior** (8.2/8.3 recomendado).
@@ -55,7 +63,19 @@ Funciona na hospedagem compartilhada da Hostinger sem nenhuma instalação extra
    A pasta `uploads/` (e as subpastas `vans/` e `perfis/`) precisa permitir
    escrita pelo PHP. O padrão da Hostinger (755) já funciona.
 
+7. **Criar o administrador**
+   Acesse `https://seudominio.com.br/admin.html`. No primeiro acesso aparece
+   a tela "Criar administrador": informe a chave de instalação do passo 4,
+   seu nome, email e senha. Depois disso essa tela não aparece mais e o
+   painel passa a pedir login. Outros administradores são adicionados
+   dentro do próprio painel.
+
 Pronto: acesse o domínio, cadastre um motorista e um passageiro e faça uma reserva de teste.
+
+### Já tinha importado o banco antes do painel administrativo?
+
+Importe também `sql/atualizacao-001-admin.sql` no phpMyAdmin (uma única vez).
+Ele adiciona a tabela de administradores e a opção de bloquear contas.
 
 ## Estrutura
 
@@ -63,6 +83,8 @@ Pronto: acesse o domínio, cadastre um motorista e um passageiro e faça uma res
 index.html                  site principal (busca, viagens, cadastros, reservas)
 dashboard.html              Painel do Motorista
 dashboard-passageiro.html   Área do Passageiro
+admin.html                  Painel administrativo
+admin.js                    lógica do painel administrativo
 script.js                   lógica do site + painel do motorista + cliente da API
 dashboard-passageiro.js     lógica da área do passageiro
 style.css                   estilos
@@ -74,9 +96,11 @@ api/
   planos.php                planos dos motoristas
   reservas.php              reservas de passageiros e gestão pelo motorista
   perfil.php                perfil e foto do passageiro
+  admin.php                 painel administrativo
 sql/
   schema.sql                estrutura do banco
   demo.sql                  dados de exemplo (opcional)
+  atualizacao-001-admin.sql atualização para bancos criados antes do painel admin
 uploads/                    fotos enviadas (scripts bloqueados por .htaccess)
 ```
 
@@ -89,6 +113,7 @@ uploads/                    fotos enviadas (scripts bloqueados por .htaccess)
 - Limite de 5 tentativas de login a cada 15 minutos por IP + email
 - Uploads: só JPG/PNG/WEBP de até 3 MB, conferidos pelo conteúdo real do arquivo e salvos com nome aleatório; a pasta não executa PHP
 - `api/config.php`, `api/bootstrap.php` e `sql/` não podem ser acessados pelo navegador
+- O primeiro administrador só pode ser criado com a chave de instalação do `config.php`; contas bloqueadas perdem o acesso imediatamente
 - Telefone do motorista só é exibido ao passageiro depois da confirmação da reserva
 
 ## Desenvolvimento local

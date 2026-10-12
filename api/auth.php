@@ -15,7 +15,7 @@ function dadosPassageiro(int $id): ?array
 {
     $consulta = db()->prepare(
         'SELECT id, nome, email, telefone, cidade, estado, bio, foto
-         FROM passageiros WHERE id = ?'
+         FROM passageiros WHERE id = ? AND bloqueado = 0'
     );
     $consulta->execute([$id]);
 
@@ -26,7 +26,7 @@ function dadosMotorista(int $id): ?array
 {
     $consulta = db()->prepare(
         'SELECT id, nome, email, telefone, modelo_van, placa_van, lugares_van
-         FROM motoristas WHERE id = ?'
+         FROM motoristas WHERE id = ? AND bloqueado = 0'
     );
     $consulta->execute([$id]);
 
@@ -37,6 +37,10 @@ function respostaSessao(): never
 {
     $usuario = usuarioLogado();
     $dados = null;
+
+    if ($usuario && $usuario['tipo'] === 'admin') {
+        $usuario = null;
+    }
 
     if ($usuario) {
         $dados = $usuario['tipo'] === 'motorista'
@@ -69,13 +73,17 @@ switch (acao()) {
         verificarTentativas($email);
 
         $tabela = $tipo === 'motorista' ? 'motoristas' : 'passageiros';
-        $consulta = db()->prepare("SELECT id, senha_hash FROM {$tabela} WHERE email = ?");
+        $consulta = db()->prepare("SELECT id, senha_hash, bloqueado FROM {$tabela} WHERE email = ?");
         $consulta->execute([$email]);
         $conta = $consulta->fetch();
 
         if (!$conta || !password_verify($senha, $conta['senha_hash'])) {
             registrarTentativa($email);
             erro('Email ou senha incorretos.', 401);
+        }
+
+        if ((int) $conta['bloqueado'] === 1) {
+            erro('Sua conta está bloqueada. Fale com o suporte da VANLOC.', 403);
         }
 
         if (password_needs_rehash($conta['senha_hash'], PASSWORD_DEFAULT)) {

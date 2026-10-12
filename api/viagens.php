@@ -37,7 +37,7 @@ switch (acao()) {
                     v.data, v.horario, v.valor, v.vagas, v.foto, ' . VL_SQL_OCUPADAS . ' AS ocupadas
              FROM viagens v
              JOIN motoristas m ON m.id = v.motorista_id
-             WHERE v.status = \'ativa\' AND v.data >= CURDATE()
+             WHERE v.status = \'ativa\' AND v.data >= CURDATE() AND m.bloqueado = 0
              ORDER BY v.data, v.horario
              LIMIT 200'
         );

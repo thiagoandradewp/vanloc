@@ -88,8 +88,10 @@ switch (acao()) {
         /* trava a viagem para que duas reservas simultâneas
         não ultrapassem o número de vagas */
         $consulta = $pdo->prepare(
-            "SELECT id, valor, vagas, data FROM viagens
-             WHERE id = ? AND status = 'ativa' FOR UPDATE"
+            "SELECT v.id, v.valor, v.vagas, v.data FROM viagens v
+             JOIN motoristas m ON m.id = v.motorista_id
+             WHERE v.id = ? AND v.status = 'ativa' AND m.bloqueado = 0
+             FOR UPDATE"
         );
         $consulta->execute([$viagemId]);
         $viagem = $consulta->fetch();

@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS motoristas (
     modelo_van VARCHAR(80) NOT NULL DEFAULT '',
     placa_van VARCHAR(10) NOT NULL DEFAULT '',
     lugares_van SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+    bloqueado TINYINT(1) NOT NULL DEFAULT 0,
     criado_em DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE KEY uk_motoristas_email (email)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -32,6 +33,7 @@ CREATE TABLE IF NOT EXISTS passageiros (
     estado CHAR(2) NOT NULL DEFAULT '',
     bio VARCHAR(500) NOT NULL DEFAULT '',
     foto VARCHAR(255) NOT NULL DEFAULT '',
+    bloqueado TINYINT(1) NOT NULL DEFAULT 0,
     criado_em DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE KEY uk_passageiros_email (email)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -83,6 +85,17 @@ CREATE TABLE IF NOT EXISTS reservas (
         REFERENCES viagens (id) ON DELETE CASCADE,
     CONSTRAINT fk_reservas_passageiro FOREIGN KEY (passageiro_id)
         REFERENCES passageiros (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Administradores do painel (admin.html)
+CREATE TABLE IF NOT EXISTS administradores (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(120) NOT NULL,
+    email VARCHAR(190) NOT NULL,
+    senha_hash VARCHAR(255) NOT NULL,
+    ultimo_acesso DATETIME NULL,
+    criado_em DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uk_administradores_email (email)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Usada para limitar tentativas de login (proteção contra força bruta)
