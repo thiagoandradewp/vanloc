@@ -16,6 +16,17 @@ DirectoryIndex index.html
     # Bloqueia arquivos internos do projeto
     RewriteRule ^(sql|\.git)(/|$) - [F,L]
     RewriteRule (^|/)(LEIA-ME\.txt|README\.md|\.gitignore)$ - [F,L]
+
+    # Endereços sem ".html": /admin abre admin.html, /dashboard abre dashboard.html...
+    # "/admin/" (com barra no final) é redirecionado para "/admin"
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{DOCUMENT_ROOT}/$1.html -f
+    RewriteRule ^([^.]+)/$ /$1 [R=301,L]
+
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{DOCUMENT_ROOT}/$1.html -f
+    RewriteRule ^([^.]+)$ $1.html [L]
 </IfModule>
 
 <IfModule mod_headers.c>

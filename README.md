@@ -25,7 +25,7 @@ Funciona na hospedagem compartilhada da Hostinger sem nenhuma instalação extra
 - Confirmar ou recusar reservas e falar com o passageiro pelo WhatsApp
 - Até 3 planos mensais (mínimo de R$ 20,00 por viagem)
 
-**Administração** (`/admin.html`)
+**Administração** (`/admin`)
 - Visão geral: passageiros, motoristas, viagens ativas, receita confirmada, reservas por status e rotas mais procuradas
 - Reservas: busca, filtro por status, confirmar / recusar / cancelar
 - Viagens: busca, filtro (ativas, encerradas, canceladas) e cancelamento
@@ -64,7 +64,7 @@ Funciona na hospedagem compartilhada da Hostinger sem nenhuma instalação extra
    escrita pelo PHP. O padrão da Hostinger (755) já funciona.
 
 7. **Criar o administrador**
-   Acesse `https://seudominio.com.br/admin.html`. No primeiro acesso aparece
+   Acesse `https://seudominio.com.br/admin`. No primeiro acesso aparece
    a tela "Criar administrador": informe a chave de instalação do passo 4,
    seu nome, email e senha. Depois disso essa tela não aparece mais e o
    painel passa a pedir login. Outros administradores são adicionados

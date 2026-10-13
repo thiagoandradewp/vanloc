@@ -68,7 +68,7 @@ async function adminSair() {
     } catch (erro) {
         // segue para a tela de login mesmo assim
     }
-    window.location.href = "admin.html";
+    window.location.href = "admin";
 }
 
 /* Envia um formulário de acesso (login ou instalação) */
