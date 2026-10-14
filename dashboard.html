@@ -609,12 +609,35 @@
 
                     <div id="campoCapacidadePainel" style="display:none">
 
-                        <label for="capacidadeCargaPainel">Capacidade de carga do veículo (kg)</label>
+                        <div class="entrega-form-grid">
 
-                        <input type="number" id="capacidadeCargaPainel" min="1" max="30000" placeholder="Ex: 500">
+                            <div>
+                                <label for="tipoVeiculoPainel">Veículo usado nas entregas</label>
+                                <select id="tipoVeiculoPainel">
+                            <option value="moto">Moto</option>
+                            <option value="carro">Carro</option>
+                            <option value="utilitario">Utilitário (Fiorino, Strada...)</option>
+                            <option value="van" selected>Van</option>
+                            <option value="caminhao">Caminhão</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label for="capacidadeCargaPainel">Capacidade de carga (kg)</label>
+                                <input type="number" id="capacidadeCargaPainel" min="1" max="30000" placeholder="Ex: 500">
+                            </div>
+
+                            <div class="largura-total">
+                                <label for="regioesPainel">Cidades atendidas (opcional)</label>
+                                <input type="text" id="regioesPainel" maxlength="1000" placeholder="Ex: Caruaru, Recife, Gravatá">
+                            </div>
+
+                        </div>
 
                         <small class="entregas-ajuda">
-                            Você só verá entregas com peso igual ou menor que essa capacidade.
+                            Você verá as entregas que cabem no seu veículo e na sua capacidade de
+                            carga e que saem ou chegam em uma das cidades informadas. Deixe as
+                            cidades em branco para ver entregas de qualquer cidade.
                         </small>
 
                     </div>

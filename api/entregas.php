@@ -23,7 +23,9 @@ function exigirMotoristaEntregas(): array
 {
     $motoristaId = exigirLogin('motorista');
 
-    $consulta = db()->prepare('SELECT faz_entregas, capacidade_carga_kg FROM motoristas WHERE id = ?');
+    $consulta = db()->prepare(
+        'SELECT faz_entregas, capacidade_carga_kg, tipo_veiculo FROM motoristas WHERE id = ?'
+    );
     $consulta->execute([$motoristaId]);
     $motorista = $consulta->fetch();
 
@@ -31,8 +33,18 @@ function exigirMotoristaEntregas(): array
         erro('Ative o serviço de entregas em "Meus serviços" para acessar as entregas.', 403);
     }
 
-    return ['id' => $motoristaId, 'capacidade' => (int) $motorista['capacidade_carga_kg']];
+    return [
+        'id' => $motoristaId,
+        'capacidade' => (int) $motorista['capacidade_carga_kg'],
+        'tipo_veiculo' => $motorista['tipo_veiculo'],
+    ];
 }
+
+/** Quem publicou a entrega: empresa, pessoa física ou administração */
+const VL_SQL_SOLICITANTE =
+    "CASE WHEN p.id IS NULL THEN 'VANLOC (parceiro)'
+          WHEN p.tipo_conta = 'empresa' THEN p.empresa_nome
+          ELSE 'Pessoa física' END AS solicitante";
 
 function entregaDoMotorista(int $id, int $motoristaId): array
 {
@@ -60,21 +72,32 @@ switch (acao()) {
         $cidade = trim((string) ($_GET['cidade'] ?? ''));
         $cidade = $cidade === '' ? null : '%' . addcslashes(mb_substr($cidade, 0, 80), '%_\\') . '%';
 
-        /* compatível = cabe na capacidade de carga do motorista */
+        /* só aparecem entregas ainda sem motorista e compatíveis com
+        veículo, capacidade, dimensões e cidades atendidas */
+        [$compativel, $parametros] = condicaoCompatibilidade($motorista);
+
         $consulta = db()->prepare(
-            'SELECT ' . VL_ENTREGA_CAMPOS . '
+            'SELECT ' . VL_ENTREGA_CAMPOS . ', ' . VL_SQL_SOLICITANTE . '
              FROM entregas e
-             WHERE e.status = \'disponivel\'
+             LEFT JOIN passageiros p ON p.id = e.passageiro_id
+             WHERE e.status = \'disponivel\' AND e.motorista_id IS NULL
                AND e.data_retirada >= CURDATE()
-               AND e.peso_kg <= ?
+               AND ' . $compativel . '
                AND (? IS NULL OR e.retirada_cidade LIKE ? OR e.destino_cidade LIKE ?)
-             ORDER BY e.data_retirada, e.criado_em
+             ORDER BY e.data_retirada, e.horario_retirada, e.criado_em
              LIMIT 200'
         );
-        $consulta->execute([$motorista['capacidade'], $cidade, $cidade, $cidade]);
+        $consulta->execute([...$parametros, $cidade, $cidade, $cidade]);
+
+        $regioes = db()->prepare('SELECT cidade FROM motorista_regioes WHERE motorista_id = ? ORDER BY cidade');
+        $regioes->execute([$motorista['id']]);
 
         responder([
-            'capacidade_carga_kg' => $motorista['capacidade'],
+            'perfil' => [
+                'capacidade_carga_kg' => $motorista['capacidade'],
+                'tipo_veiculo' => $motorista['tipo_veiculo'],
+                'regioes' => $regioes->fetchAll(PDO::FETCH_COLUMN),
+            ],
             'entregas' => array_map(fn($e) => formatarEntrega($e, false), $consulta->fetchAll()),
         ]);
 
@@ -82,8 +105,10 @@ switch (acao()) {
         $motorista = exigirMotoristaEntregas();
 
         $consulta = db()->prepare(
-            'SELECT ' . VL_ENTREGA_CAMPOS . '
+            'SELECT ' . VL_ENTREGA_CAMPOS . ', ' . VL_SQL_SOLICITANTE . ',
+                    p.nome AS cliente_nome, p.telefone AS cliente_telefone
              FROM entregas e
+             LEFT JOIN passageiros p ON p.id = e.passageiro_id
              WHERE e.motorista_id = ?
              ORDER BY FIELD(e.status, \'aguardando_retirada\', \'coletada\', \'em_transito\') DESC,
                       e.data_retirada DESC, e.aceita_em DESC'
@@ -107,17 +132,20 @@ switch (acao()) {
             erro('Você já tem ' . VL_ENTREGA_LIMITE_ATIVAS . ' entregas em andamento. Conclua alguma antes de aceitar outra.', 409);
         }
 
-        /* a condição de status evita que dois motoristas aceitem a mesma entrega */
+        /* o UPDATE só altera a linha se ela ainda estiver disponível: se
+        dois motoristas aceitarem ao mesmo tempo, apenas um consegue */
+        [$compativel, $parametros] = condicaoCompatibilidade($motorista);
+
         $aceita = db()->prepare(
-            "UPDATE entregas
-             SET motorista_id = ?, status = 'aguardando_retirada', aceita_em = NOW()
-             WHERE id = ? AND status = 'disponivel' AND motorista_id IS NULL
-               AND data_retirada >= CURDATE() AND peso_kg <= ?"
+            "UPDATE entregas e
+             SET e.motorista_id = ?, e.status = 'aguardando_retirada', e.aceita_em = NOW()
+             WHERE e.id = ? AND e.status = 'disponivel' AND e.motorista_id IS NULL
+               AND e.data_retirada >= CURDATE() AND " . $compativel
         );
-        $aceita->execute([$motorista['id'], $id, $motorista['capacidade']]);
+        $aceita->execute([$motorista['id'], $id, ...$parametros]);
 
         if ($aceita->rowCount() === 0) {
-            erro('Esta entrega não está mais disponível ou excede a sua capacidade de carga.', 409);
+            erro('Esta entrega já foi aceita por outro motorista ou não é compatível com o seu veículo.', 409);
         }
 
         responder(['ok' => true]);

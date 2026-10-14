@@ -99,16 +99,8 @@
                         <h1>Entregas</h1>
                         <p class="dp-subtitle">Envie mercadorias com motoristas da VANLOC e acompanhe cada etapa.</p>
                     </div>
-                    <button type="button" class="dp-btn" id="dpBotaoNovaEntrega" onclick="dpAbrirFormEntrega()"><i class="fa-solid fa-plus"></i> Solicitar entrega</button>
+                    <a class="dp-btn" href="envios.html" style="text-decoration:none"><i class="fa-solid fa-plus"></i> Nova entrega na Área de Envios</a>
                 </div>
-                <form id="dpFormEntrega" class="dp-card entrega-form" style="display:none">
-                    <h2>Nova solicitação de entrega</h2>
-                    <div id="dpCamposEntrega"></div>
-                    <div class="dp-actions">
-                        <button type="button" class="dp-btn secondary" onclick="dpFecharFormEntrega()">Cancelar</button>
-                        <button type="submit" class="dp-btn"><i class="fa-solid fa-paper-plane"></i> Enviar solicitação</button>
-                    </div>
-                </form>
                 <div class="dp-card" id="dpListaEntregas"></div>
             </section>
             <section id="dpAbaFavoritos" class="dp-aba">

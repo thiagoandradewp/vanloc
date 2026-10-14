@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS motoristas (
     faz_passageiros TINYINT(1) NOT NULL DEFAULT 1,
     faz_entregas TINYINT(1) NOT NULL DEFAULT 0,
     capacidade_carga_kg SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+    tipo_veiculo ENUM('moto','carro','utilitario','van','caminhao') NOT NULL DEFAULT 'van',
     bloqueado TINYINT(1) NOT NULL DEFAULT 0,
     criado_em DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE KEY uk_motoristas_email (email)
@@ -36,6 +37,9 @@ CREATE TABLE IF NOT EXISTS passageiros (
     estado CHAR(2) NOT NULL DEFAULT '',
     bio VARCHAR(500) NOT NULL DEFAULT '',
     foto VARCHAR(255) NOT NULL DEFAULT '',
+    tipo_conta ENUM('pessoa','empresa') NOT NULL DEFAULT 'pessoa',
+    empresa_nome VARCHAR(120) NOT NULL DEFAULT '',
+    documento VARCHAR(18) NOT NULL DEFAULT '',
     bloqueado TINYINT(1) NOT NULL DEFAULT 0,
     criado_em DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE KEY uk_passageiros_email (email)
@@ -90,6 +94,16 @@ CREATE TABLE IF NOT EXISTS reservas (
         REFERENCES passageiros (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Cidades atendidas pelo motorista nas entregas (vazio = atende qualquer cidade)
+CREATE TABLE IF NOT EXISTS motorista_regioes (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    motorista_id INT UNSIGNED NOT NULL,
+    cidade VARCHAR(80) NOT NULL,
+    UNIQUE KEY uk_motorista_regiao (motorista_id, cidade),
+    CONSTRAINT fk_regioes_motorista FOREIGN KEY (motorista_id)
+        REFERENCES motoristas (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Solicitações de entrega de mercadorias (feitas por passageiros/clientes
 -- ou cadastradas pelo administrador) e aceitas por motoristas
 CREATE TABLE IF NOT EXISTS entregas (
@@ -102,6 +116,10 @@ CREATE TABLE IF NOT EXISTS entregas (
     tamanho ENUM('pequeno','medio','grande') NOT NULL DEFAULT 'pequeno',
     peso_kg DECIMAL(7,2) NOT NULL,
     volumes SMALLINT UNSIGNED NOT NULL DEFAULT 1,
+    comprimento_cm SMALLINT UNSIGNED NULL,
+    largura_cm SMALLINT UNSIGNED NULL,
+    altura_cm SMALLINT UNSIGNED NULL,
+    veiculo_necessario ENUM('moto','carro','utilitario','van','caminhao') NOT NULL DEFAULT 'moto',
     retirada_endereco VARCHAR(200) NOT NULL,
     retirada_cidade VARCHAR(80) NOT NULL,
     retirada_contato VARCHAR(120) NOT NULL,
@@ -111,6 +129,7 @@ CREATE TABLE IF NOT EXISTS entregas (
     destinatario_nome VARCHAR(120) NOT NULL,
     destinatario_telefone VARCHAR(20) NOT NULL,
     data_retirada DATE NOT NULL,
+    horario_retirada TIME NULL,
     valor DECIMAL(10,2) NOT NULL,
     observacoes VARCHAR(500) NOT NULL DEFAULT '',
     status ENUM('disponivel','aguardando_retirada','coletada','em_transito','entregue','cancelada') NOT NULL DEFAULT 'disponivel',

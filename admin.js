@@ -401,11 +401,17 @@ async function adminCarregarEntregas() {
         entregas.map(e => [
             escapeHtml(e.codigo) + "<br><small>" + adminDataHora(e.criado_em) + "</small>",
             escapeHtml(e.descricao) + "<br><small>" + escapeHtml(VL_ENTREGA_PLATAFORMAS[e.plataforma] || e.plataforma) +
-                " · " + vlEntregaPeso(e.peso_kg) + " · " + e.volumes + " vol.</small>",
+                " · " + vlEntregaPeso(e.peso_kg) + " · " + e.volumes + " vol." +
+                (e.comprimento_cm ? " · " + e.comprimento_cm + "×" + e.largura_cm + "×" + e.altura_cm + " cm" : "") +
+                " · " + escapeHtml((VL_VEICULOS[e.veiculo_necessario] || [e.veiculo_necessario])[0]) + "</small>",
             escapeHtml(e.retirada_cidade) + " → " + escapeHtml(e.destino_cidade),
-            formatarData(e.data_retirada),
+            formatarData(e.data_retirada) + (e.horario_retirada ? "<br><small>" + escapeHtml(e.horario_retirada) + "</small>" : ""),
             "R$ " + formatarMoeda(e.valor),
-            e.cliente_nome ? escapeHtml(e.cliente_nome) : "<small>Cadastrada pela administração</small>",
+            e.cliente_nome
+                ? (e.cliente_tipo === "empresa" && e.cliente_empresa
+                    ? escapeHtml(e.cliente_empresa) + "<br><small>" + escapeHtml(e.cliente_nome) + "</small>"
+                    : escapeHtml(e.cliente_nome))
+                : "<small>Cadastrada pela administração</small>",
             e.motorista_nome ? escapeHtml(e.motorista_nome) : "—",
             vlEntregaChip(e.status),
             ["entregue", "cancelada"].includes(e.status)
@@ -491,7 +497,8 @@ async function adminCarregarMotoristas() {
                 (m.lugares_van ? " · " + m.lugares_van + " lugares" : "") + "</small>" +
                 "<br><small>" + [
                     m.faz_passageiros ? "Passageiros" : "",
-                    m.faz_entregas ? "Entregas até " + m.capacidade_carga_kg + " kg" : ""
+                    m.faz_entregas ? "Entregas: " + (VL_VEICULOS[m.tipo_veiculo] || [m.tipo_veiculo])[0] +
+                        ", até " + m.capacidade_carga_kg + " kg" + (m.regioes ? " (" + m.regioes + ")" : "") : ""
                 ].filter(Boolean).join(" · ") + "</small>",
             m.viagens_ativas + " ativas<br><small>" + m.viagens + " no total</small>",
             m.reservas_confirmadas,
@@ -514,12 +521,16 @@ async function adminCarregarPassageiros() {
     }
 
     document.getElementById("listaAdminPassageiros").innerHTML = adminTabela(
-        ["Passageiro", "Telefone", "Localidade", "Reservas", "Cadastro", "Ações"],
+        ["Cliente / passageiro", "Telefone", "Localidade", "Reservas", "Entregas", "Cadastro", "Ações"],
         passageiros.map(p => [
-            adminNomeConta(p),
+            adminNomeConta(p) + (p.tipo_conta === "empresa"
+                ? '<br><small><i class="fa-solid fa-store"></i> ' + escapeHtml(p.empresa_nome) +
+                  (p.documento ? " · " + escapeHtml(p.documento) : "") + "</small>"
+                : ""),
             escapeHtml(p.telefone || "—"),
             escapeHtml(p.cidade || "—") + (p.estado ? " - " + escapeHtml(p.estado) : ""),
             p.reservas,
+            p.entregas,
             adminDataHora(p.criado_em),
             adminAcoesConta("passageiro", p)
         ]),

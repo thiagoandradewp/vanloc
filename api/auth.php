@@ -5,7 +5,10 @@ VANLOC - Autenticação e cadastro
 GET  auth.php?acao=sessao                 usuário logado (ou null)
 POST auth.php?acao=login                  {tipo, email, senha}
 POST auth.php?acao=logout
-POST auth.php?acao=cadastrar_passageiro   {nome, email, telefone, cidade, estado, senha}
+POST auth.php?acao=cadastrar_passageiro   {nome, email, telefone, cidade, estado, senha,
+                                           tipo_conta?, empresa_nome?, documento?}
+                                          (a mesma conta serve para reservar viagens e
+                                           para solicitar entregas na Área de Envios)
 POST auth.php?acao=cadastrar_motorista    multipart: dados do motorista + serviços
                                           (+ 1ª viagem e foto, se fizer transporte de passageiros)
 ===================================================== */
@@ -15,7 +18,7 @@ require __DIR__ . '/bootstrap.php';
 function dadosPassageiro(int $id): ?array
 {
     $consulta = db()->prepare(
-        'SELECT id, nome, email, telefone, cidade, estado, bio, foto
+        'SELECT id, nome, email, telefone, cidade, estado, bio, foto, tipo_conta, empresa_nome, documento
          FROM passageiros WHERE id = ? AND bloqueado = 0'
     );
     $consulta->execute([$id]);
@@ -26,9 +29,11 @@ function dadosPassageiro(int $id): ?array
 function dadosMotorista(int $id): ?array
 {
     $consulta = db()->prepare(
-        'SELECT id, nome, email, telefone, modelo_van, placa_van, lugares_van,
-                faz_passageiros, faz_entregas, capacidade_carga_kg
-         FROM motoristas WHERE id = ? AND bloqueado = 0'
+        "SELECT m.id, m.nome, m.email, m.telefone, m.modelo_van, m.placa_van, m.lugares_van,
+                m.faz_passageiros, m.faz_entregas, m.capacidade_carga_kg, m.tipo_veiculo,
+                (SELECT GROUP_CONCAT(r.cidade ORDER BY r.cidade SEPARATOR ', ')
+                 FROM motorista_regioes r WHERE r.motorista_id = m.id) AS regioes
+         FROM motoristas m WHERE m.id = ? AND m.bloqueado = 0"
     );
     $consulta->execute([$id]);
 
@@ -111,6 +116,7 @@ switch (acao()) {
         $cidade = texto('cidade', 80, true, 'cidade');
         $estado = mb_strtoupper(texto('estado', 2, false, 'estado'));
         $hash = senhaNova();
+        [$tipoConta, $empresaNome, $documento] = lerDadosCliente();
 
         $existe = db()->prepare('SELECT 1 FROM passageiros WHERE email = ?');
         $existe->execute([$email]);
@@ -119,9 +125,9 @@ switch (acao()) {
         }
 
         db()->prepare(
-            'INSERT INTO passageiros (nome, email, senha_hash, telefone, cidade, estado)
-             VALUES (?, ?, ?, ?, ?, ?)'
-        )->execute([$nome, $email, $hash, $telefone, $cidade, $estado]);
+            'INSERT INTO passageiros (nome, email, senha_hash, telefone, cidade, estado, tipo_conta, empresa_nome, documento)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
+        )->execute([$nome, $email, $hash, $telefone, $cidade, $estado, $tipoConta, $empresaNome, $documento]);
 
         iniciarSessao('passageiro', (int) db()->lastInsertId());
         respostaSessao();
@@ -137,7 +143,7 @@ switch (acao()) {
         $placaVan = mb_strtoupper(texto('placa_van', 10, true, 'placa'));
         $lugaresVan = inteiro('lugares_van', 1, 60, 'quantidade de lugares');
         $hash = senhaNova();
-        [$fazPassageiros, $fazEntregas, $capacidade] = lerServicosMotorista();
+        [$fazPassageiros, $fazEntregas, $capacidade, $tipoVeiculo, $regioes] = lerServicosMotorista();
 
         /* a primeira viagem só é exigida de quem transporta passageiros */
         if ($fazPassageiros) {
@@ -163,12 +169,14 @@ switch (acao()) {
         try {
             $pdo->prepare(
                 'INSERT INTO motoristas (nome, email, senha_hash, telefone, cpf, modelo_van, placa_van, lugares_van,
-                                         faz_passageiros, faz_entregas, capacidade_carga_kg)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+                                         faz_passageiros, faz_entregas, capacidade_carga_kg, tipo_veiculo)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
             )->execute([$nome, $email, $hash, $telefone, $cpf, $modeloVan, $placaVan, $lugaresVan,
-                        $fazPassageiros, $fazEntregas, $capacidade]);
+                        $fazPassageiros, $fazEntregas, $capacidade, $tipoVeiculo]);
 
             $motoristaId = (int) $pdo->lastInsertId();
+
+            salvarRegioesMotorista($motoristaId, $regioes);
 
             if ($fazPassageiros) {
                 $pdo->prepare(

@@ -57,6 +57,8 @@ HEADER
 
         <a href="#passageiro">Passageiros</a>
 
+        <a href="envios.html">Envios</a>
+
         <a href="#como-funciona">Como funciona</a>
 
         <a href="#vantagens">Vantagens</a>
@@ -969,6 +971,50 @@ VANTAGENS
 BANNER MOTORISTA
 ===================================================== -->
 
+<section class="motorista-banner envios-banner">
+
+
+    <div>
+
+
+        <span>
+
+            TEM UMA LOJA OU PRECISA ENVIAR ALGO?
+
+        </span>
+
+
+        <h2>
+
+            Publique sua entrega na VANLOC
+
+        </h2>
+
+
+        <p>
+
+            Empresas, lojas, comerciantes e clientes cadastram a mercadoria
+            e motoristas com veículo compatível aceitam o transporte.
+
+        </p>
+
+
+    </div>
+
+
+    <a class="botao-banner" href="envios.html">
+
+        <i class="fa-solid fa-box"></i>
+
+        Área de Envios
+
+    </a>
+
+
+</section>
+
+
+
 <section class="motorista-banner">
 
 
@@ -1051,6 +1097,8 @@ FOOTER
         <a href="#viagens">Viagens</a>
 
         <a href="#passageiro">Passageiros</a>
+
+        <a href="envios.html">Área de Envios</a>
 
         <a href="#como-funciona">Como funciona</a>
 
@@ -1421,14 +1469,47 @@ MODAL MOTORISTA
 
             <div id="campoCapacidadeMotorista" style="display:none">
 
-                <label for="capacidadeCargaMotorista">Capacidade de carga do veículo (kg)</label>
+                <div class="form-grid">
+
+                    <div>
+
+                        <label for="tipoVeiculoMotorista">Veículo usado nas entregas</label>
+
+                        <select id="tipoVeiculoMotorista" class="campo-select">
+                            <option value="moto">Moto</option>
+                            <option value="carro">Carro</option>
+                            <option value="utilitario">Utilitário (Fiorino, Strada...)</option>
+                            <option value="van" selected>Van</option>
+                            <option value="caminhao">Caminhão</option>
+                        </select>
+
+                    </div>
+
+
+                    <div>
+
+                        <label for="capacidadeCargaMotorista">Capacidade de carga (kg)</label>
+
+                        <input
+                            type="number"
+                            id="capacidadeCargaMotorista"
+                            min="1"
+                            max="30000"
+                            placeholder="Ex: 500"
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <label for="regioesMotorista">Cidades atendidas (opcional)</label>
 
                 <input
-                    type="number"
-                    id="capacidadeCargaMotorista"
-                    min="1"
-                    max="30000"
-                    placeholder="Ex: 500"
+                    type="text"
+                    id="regioesMotorista"
+                    maxlength="1000"
+                    placeholder="Ex: Caruaru, Recife, Gravatá (em branco = qualquer cidade)"
                 >
 
             </div>

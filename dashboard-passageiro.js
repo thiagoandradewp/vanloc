@@ -284,100 +284,34 @@ document.addEventListener("DOMContentLoaded", async function() {
 
 /* =====================================================
 ENTREGAS (solicitações do cliente)
+As solicitações são feitas na Área de Envios (envios.html);
+aqui o cliente acompanha todas elas.
 ===================================================== */
 
 async function dpCarregarEntregas() {
     const lista = document.getElementById("dpListaEntregas");
-    let entregas;
 
     try {
-        entregas = (await vlApi("entregas.php?acao=solicitadas")).entregas;
+        await vlClienteCarregarEntregas();
     } catch (erro) {
         lista.innerHTML = '<div class="dp-empty">' + dpEscape(erro.message) + '</div>';
         return;
     }
 
-    lista.innerHTML = entregas.length
-        ? '<h2>Minhas entregas</h2>' + entregas.map(dpRenderEntrega).join("")
+    const andamento = vlClienteFiltrar("andamento");
+    const historico = vlClienteFiltrar("historico");
+
+    lista.innerHTML = andamento.length || historico.length
+        ? '<h2>Em andamento</h2>' +
+          (andamento.length ? andamento.map(vlClienteEntregaCard).join("") : '<div class="dp-empty">Nenhuma entrega em andamento.</div>') +
+          '<h2 style="margin-top:26px">Histórico</h2>' +
+          (historico.length ? historico.map(vlClienteEntregaCard).join("") : '<div class="dp-empty">Nenhuma entrega concluída ainda.</div>')
         : '<div class="dp-empty">Você ainda não solicitou nenhuma entrega.<br><br>' +
-          'Use o botão <strong>Solicitar entrega</strong> para enviar uma encomenda.</div>';
+          '<a href="envios.html" class="dp-btn" style="display:inline-block;text-decoration:none">Abrir a Área de Envios</a></div>';
 }
 
-function dpRenderEntrega(e) {
-    let extra = "";
-
-    if (e.motorista_nome) {
-        extra = '<div class="entrega-motorista"><i class="fa-solid fa-id-card"></i><div>' +
-            '<span>Motorista</span><strong>' + dpEscape(e.motorista_nome) + '</strong>' +
-            '<small>' + dpEscape([e.modelo_van, e.placa_van].filter(Boolean).join(" · ")) + '</small></div>' +
-            (["aguardando_retirada", "coletada", "em_transito"].includes(e.status)
-                ? vlEntregaWhatsApp(e.motorista_telefone, "Falar com o motorista")
-                : "") +
-            '</div>';
-    } else if (e.status === "disponivel") {
-        extra = '<p class="entrega-obs"><i class="fa-solid fa-hourglass-half"></i> ' +
-            'Aguardando um motorista compatível aceitar a entrega.</p>';
-    }
-
-    const acoes = e.status === "disponivel" || e.status === "aguardando_retirada"
-        ? '<button type="button" class="dp-btn secondary" onclick="dpCancelarEntrega(' + Number(e.id) + ')">Cancelar solicitação</button>'
-        : "";
-
-    return vlEntregaCard(e, { extra: extra, acoes: acoes });
-}
-
-function dpAbrirFormEntrega() {
-    const form = document.getElementById("dpFormEntrega");
-
-    if (!form.dataset.montado) {
-        vlEntregaMontarFormulario(document.getElementById("dpCamposEntrega"));
-        form.dataset.montado = "1";
-    }
-
-    form.style.display = "block";
-    document.getElementById("dpBotaoNovaEntrega").style.display = "none";
-    form.scrollIntoView({ behavior: "smooth", block: "start" });
-}
-
-function dpFecharFormEntrega() {
-    const form = document.getElementById("dpFormEntrega");
-    form.reset();
-    form.style.display = "none";
-    document.getElementById("dpBotaoNovaEntrega").style.display = "";
-}
-
-async function dpCancelarEntrega(id) {
-    if (!confirm("Cancelar esta solicitação de entrega?")) return;
-
-    try {
-        await vlApi("entregas.php?acao=cancelar", { id: id });
-    } catch (erro) {
-        alert(erro.message);
-    }
-
-    dpCarregarEntregas();
-}
-
-document.addEventListener("DOMContentLoaded", function() {
-    const form = document.getElementById("dpFormEntrega");
-    if (!form) return;
-
-    form.addEventListener("submit", async function(event) {
-        event.preventDefault();
-        vlBotaoCarregando(form, true);
-
-        try {
-            const resposta = await vlApi("entregas.php?acao=solicitar", vlEntregaLerFormulario(form));
-            vlBotaoCarregando(form, false);
-            dpFecharFormEntrega();
-            alert("Solicitação " + resposta.codigo + " enviada! Ela já está visível para os motoristas compatíveis.");
-            dpCarregarEntregas();
-        } catch (erro) {
-            vlBotaoCarregando(form, false);
-            alert(erro.message);
-        }
-    });
-});
+/* depois de cancelar uma entrega (entregas.js) */
+window.vlClienteAposAlterar = dpCarregarEntregas;
 
 function dpSair() {
     vlSair();

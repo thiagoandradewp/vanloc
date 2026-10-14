@@ -22,7 +22,14 @@ Funciona na hospedagem compartilhada da Hostinger sem nenhuma instalação extra
 - Área do passageiro: perfil, foto, histórico de reservas, cancelamento
 - Depois que o motorista confirma, aparece o botão de WhatsApp do motorista
 - Aviso "PAGAMENTO REALIZADO NA HORA DA PARTIDA PARA VIAGEM" antes de confirmar a reserva
-- Aba **Entregas**: solicitar o envio de uma mercadoria e acompanhar cada etapa
+- Aba **Entregas**: acompanhar as entregas solicitadas na Área de Envios
+
+**Área de Envios** (`/envios.html`): para empresas, lojas, comerciantes e clientes
+- Conta de **empresa/loja** (nome da empresa, CNPJ opcional) ou **pessoa física**; é a mesma conta usada para reservar viagens
+- Publicar entregas com endereço de retirada e destino, descrição, volumes, peso, dimensões aproximadas,
+  data e horário desejados, veículo necessário (sugerido automaticamente pela carga) e valor oferecido
+- Acompanhar as entregas em andamento, ver o motorista responsável e consultar o histórico
+- Motoristas não publicam entregas: só consultam, aceitam e executam
 
 **Motorista**
 - Cadastro com senha, dados da van, foto e primeira viagem
@@ -30,9 +37,11 @@ Funciona na hospedagem compartilhada da Hostinger sem nenhuma instalação extra
 - Publicar novas viagens e cancelar viagens (as reservas ativas são recusadas automaticamente)
 - Confirmar ou recusar reservas e falar com o passageiro pelo WhatsApp
 - Até 3 planos mensais (mínimo de R$ 20,00 por viagem)
-- **Meus serviços**: transporte de passageiros, entregas ou ambos (com a capacidade de carga em kg);
-  os menus do painel aparecem conforme os serviços escolhidos
-- **Entregas**: lista de entregas disponíveis compatíveis com a capacidade de carga (com filtro por cidade),
+- **Meus serviços**: transporte de passageiros, entregas ou ambos; para entregas, tipo de veículo
+  (moto, carro, utilitário, van, caminhão), capacidade de carga (kg) e cidades atendidas.
+  Os menus do painel aparecem conforme os serviços escolhidos
+- **Entregas**: lista de entregas disponíveis compatíveis com o veículo, a capacidade de carga, as dimensões
+  da carga e as cidades atendidas (com filtro por cidade),
   aceite, etapas *Aguardando retirada → Mercadoria coletada → Em trânsito → Entregue* e histórico.
   Contatos e endereço exato do destino só aparecem depois de aceitar.
 
@@ -91,6 +100,8 @@ que o seu banco ainda não recebeu:
 
 1. `sql/atualizacao-001-admin.sql`: tabela de administradores e bloqueio de contas
 2. `sql/atualizacao-002-entregas.sql`: serviços do motorista e tabela de entregas
+3. `sql/atualizacao-003-envios.sql`: contas de empresa, tipo de veículo e cidades do motorista,
+   dimensões/horário/veículo das entregas
 
 Nenhuma delas apaga dados. Depois da 002, os motoristas já cadastrados continuam
 como "transporte de passageiros" e podem ativar as entregas em *Meus serviços*.
@@ -101,6 +112,7 @@ como "transporte de passageiros" e podem ativar as entregas em *Meus serviços*.
 index.html                  site principal (busca, viagens, cadastros, reservas)
 dashboard.html              Painel do Motorista
 dashboard-passageiro.html   Área do Passageiro
+envios.html / envios.js     Área de Envios (empresas e clientes publicam e acompanham entregas)
 admin.html                  Painel administrativo
 admin.js                    lógica do painel administrativo
 entregas.js                 entregas: componentes compartilhados + abas Entregas / Meus serviços do motorista
@@ -124,6 +136,7 @@ sql/
   demo.sql                  dados de exemplo (opcional)
   atualizacao-001-admin.sql atualização para bancos criados antes do painel admin
   atualizacao-002-entregas.sql atualização para bancos criados antes das entregas
+  atualizacao-003-envios.sql   atualização para bancos criados antes da Área de Envios
 uploads/                    fotos enviadas (scripts bloqueados por .htaccess)
 ```
 

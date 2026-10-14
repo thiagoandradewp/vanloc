@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Área de Envios | VANLOC</title>
+    <meta name="description" content="Empresas, lojas, comerciantes e clientes publicam suas entregas na VANLOC e motoristas compatíveis aceitam o serviço.">
+    <meta name="theme-color" content="#2563eb">
+
+    <link rel="icon" href="favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="favicon-192.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+    <link rel="stylesheet" href="style.css">
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    >
+
+</head>
+
+
+<body class="pagina-envios">
+
+
+<!-- =====================================================
+HEADER
+===================================================== -->
+
+<header id="topo">
+
+    <a class="logo" href="index.html">
+
+        <i class="fa-solid fa-van-shuttle"></i>
+
+        <span>VAN<span class="destaque">LOC</span></span>
+
+    </a>
+
+
+    <nav id="menuPrincipal" aria-label="Menu principal">
+
+        <a href="index.html">Início</a>
+
+        <a href="index.html#viagens">Viagens</a>
+
+        <a href="envios.html" class="ativo" aria-current="page">Envios</a>
+
+        <a href="index.html#como-funciona">Como funciona</a>
+
+        <a class="btn-motorista" href="dashboard.html">
+
+            <i class="fa-solid fa-id-card"></i>
+
+            Sou Motorista
+
+        </a>
+
+    </nav>
+
+    <button class="menu-toggle" id="menuToggle" type="button"
+        aria-label="Abrir menu" aria-expanded="false" aria-controls="menuPrincipal">
+        <i class="fa-solid fa-bars"></i>
+    </button>
+
+</header>
+
+
+
+<!-- =====================================================
+APRESENTAÇÃO
+===================================================== -->
+
+<section class="envios-hero">
+
+    <span class="envios-selo">ÁREA DE ENVIOS</span>
+
+    <h1>Precisa transportar uma mercadoria?</h1>
+
+    <p>
+        Para empresas, lojas, comerciantes e clientes. Publique a entrega
+        e ela fica disponível para os motoristas da VANLOC com veículo,
+        capacidade e região compatíveis.
+    </p>
+
+    <ol class="envios-passos">
+
+        <li>
+            <i class="fa-solid fa-pen-to-square"></i>
+            <strong>Publique</strong>
+            <span>Retirada, destino, carga, data, horário e valor oferecido.</span>
+        </li>
+
+        <li>
+            <i class="fa-solid fa-handshake"></i>
+            <strong>Um motorista aceita</strong>
+            <span>Só um motorista pode aceitar cada entrega.</span>
+        </li>
+
+        <li>
+            <i class="fa-solid fa-location-dot"></i>
+            <strong>Acompanhe</strong>
+            <span>Retirada, coleta, transporte e entrega, com histórico.</span>
+        </li>
+
+    </ol>
+
+</section>
+
+
+
+<main class="envios-conteudo">
+
+
+    <!-- =================================================
+    SEM LOGIN: entrar ou criar conta
+    ================================================= -->
+
+    <div id="enviosAcesso" class="envios-acesso" style="display:none">
+
+        <form id="formEnviosLogin" class="envios-card">
+
+            <h2>Já tenho conta</h2>
+            <p class="painel-texto">Use o mesmo email e senha da sua conta VANLOC.</p>
+
+            <label for="enviosEmail">Email</label>
+            <input type="email" id="enviosEmail" autocomplete="email" required>
+
+            <label for="enviosSenha">Senha</label>
+            <input type="password" id="enviosSenha" autocomplete="current-password" required>
+
+            <button type="submit">Entrar</button>
+
+        </form>
+
+
+        <form id="formEnviosCadastro" class="envios-card">
+
+            <h2>Criar conta para enviar</h2>
+            <p class="painel-texto">Gratuito. A mesma conta também permite reservar viagens.</p>
+
+            <div class="login-tipo" role="radiogroup" aria-label="Tipo de conta">
+
+                <label>
+                    <input type="radio" name="tipoConta" value="empresa" checked>
+                    <span><i class="fa-solid fa-store"></i> Empresa / loja</span>
+                </label>
+
+                <label>
+                    <input type="radio" name="tipoConta" value="pessoa">
+                    <span><i class="fa-solid fa-user"></i> Pessoa física</span>
+                </label>
+
+            </div>
+
+            <div class="entrega-form-grid">
+
+                <div class="largura-total" id="campoEmpresaNome">
+                    <label for="cadEmpresa">Nome da empresa ou loja</label>
+                    <input type="text" id="cadEmpresa" maxlength="120">
+                </div>
+
+                <div>
+                    <label for="cadNome">Nome do responsável</label>
+                    <input type="text" id="cadNome" maxlength="120" required>
+                </div>
+
+                <div>
+                    <label for="cadDocumento" id="rotuloDocumento">CNPJ (opcional)</label>
+                    <input type="text" id="cadDocumento" maxlength="18" inputmode="numeric">
+                </div>
+
+                <div>
+                    <label for="cadEmail">Email</label>
+                    <input type="email" id="cadEmail" autocomplete="email" required>
+                </div>
+
+                <div>
+                    <label for="cadTelefone">Telefone / WhatsApp</label>
+                    <input type="tel" id="cadTelefone" maxlength="20" required>
+                </div>
+
+                <div>
+                    <label for="cadCidade">Cidade</label>
+                    <input type="text" id="cadCidade" maxlength="80" required>
+                </div>
+
+                <div>
+                    <label for="cadEstado">Estado (UF)</label>
+                    <input type="text" id="cadEstado" maxlength="2">
+                </div>
+
+                <div>
+                    <label for="cadSenha">Senha</label>
+                    <input type="password" id="cadSenha" minlength="6" autocomplete="new-password" required>
+                </div>
+
+                <div>
+                    <label for="cadSenha2">Confirme a senha</label>
+                    <input type="password" id="cadSenha2" minlength="6" autocomplete="new-password" required>
+                </div>
+
+            </div>
+
+            <button type="submit">Criar conta e publicar entregas</button>
+
+        </form>
+
+    </div>
+
+
+    <!-- =================================================
+    LOGADO COMO MOTORISTA
+    ================================================= -->
+
+    <div id="enviosMotorista" class="envios-card envios-aviso" style="display:none">
+
+        <i class="fa-solid fa-circle-info"></i>
+
+        <div>
+            <h2>Você está conectado como motorista</h2>
+            <p>
+                Motoristas não publicam entregas: as solicitações são feitas por
+                empresas e clientes. Veja e aceite as entregas compatíveis no seu painel.
+            </p>
+            <div class="envios-aviso-acoes">
+                <a class="btn-salvar-plano" href="dashboard.html#entregas">Ver entregas disponíveis</a>
+                <button type="button" class="btn-cancelar-plano" onclick="vlSair()">Sair e entrar como cliente</button>
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- =================================================
+    LOGADO COMO CLIENTE (empresa ou pessoa)
+    ================================================= -->
+
+    <div id="enviosPainel" style="display:none">
+
+        <div class="envios-conta">
+
+            <div>
+                <span id="enviosTipoConta">Conta</span>
+                <strong id="enviosNomeConta"></strong>
+            </div>
+
+            <div class="envios-conta-acoes">
+                <a href="dashboard-passageiro.html">Minha conta</a>
+                <button type="button" onclick="vlSair()">Sair</button>
+            </div>
+
+        </div>
+
+
+        <div class="envios-card">
+
+            <div class="entregas-abas" role="tablist">
+
+                <button type="button" class="entregas-aba ativo" data-lista="nova" onclick="enviosAba('nova')">
+                    <i class="fa-solid fa-plus"></i>
+                    Nova solicitação
+                </button>
+
+                <button type="button" class="entregas-aba" data-lista="andamento" onclick="enviosAba('andamento')">
+                    Em andamento
+                    <span id="contEnviosAndamento" class="entregas-contador">0</span>
+                </button>
+
+                <button type="button" class="entregas-aba" data-lista="historico" onclick="enviosAba('historico')">
+                    Histórico
+                    <span id="contEnviosHistorico" class="entregas-contador">0</span>
+                </button>
+
+            </div>
+
+
+            <form id="formEnvio" class="entrega-form">
+
+                <div id="camposEnvio"></div>
+
+                <button type="submit">
+                    <i class="fa-solid fa-paper-plane"></i>
+                    Publicar entrega
+                </button>
+
+            </form>
+
+
+            <div id="listaEnvios" class="entregas-lista" style="display:none"></div>
+
+        </div>
+
+    </div>
+
+</main>
+
+
+
+<!-- =====================================================
+NOTIFICAÇÃO
+===================================================== -->
+
+<div id="notificacao" class="notificacao">
+    <i class="fa-solid fa-circle-check"></i>
+    <span id="mensagemNotificacao"></span>
+</div>
+
+
+<script src="script.js"></script>
+<script src="entregas.js"></script>
+<script src="envios.js"></script>
+
+</body>
+
+</html>

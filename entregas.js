@@ -2,8 +2,9 @@
 VANLOC - ENTREGAS DE MERCADORIAS
 =====================================================
 1) Componentes compartilhados (painel do motorista,
-   área do passageiro e administração): rótulos,
-   cartão da entrega, etapas e formulário de solicitação
+   Área de Envios, área do passageiro e administração):
+   rótulos, cartão da entrega, etapas, formulário de
+   solicitação e lista de entregas do cliente
 2) Aba "Entregas" e "Meus serviços" do Painel do Motorista
 
 Depende de script.js (vlApi, escapeHtml, formatarData,
@@ -51,6 +52,33 @@ const VL_ENTREGA_TAMANHOS = {
 };
 
 const VL_ENTREGA_ANDAMENTO = ["aguardando_retirada", "coletada", "em_transito"];
+
+/* do menor para o maior: [rótulo, peso usual máx. (kg), maior dimensão (cm)]
+   (os mesmos limites de api/entregas-comum.php) */
+const VL_VEICULOS = {
+    moto: ["Moto", 20, 50],
+    carro: ["Carro", 200, 100],
+    utilitario: ["Utilitário (Fiorino, Strada...)", 700, 180],
+    van: ["Van", 1500, 300],
+    caminhao: ["Caminhão", 30000, 1200]
+};
+
+
+/* Menor veículo em que a carga cabe, pelo peso e pela maior dimensão */
+function vlVeiculoMinimo(pesoKg, maiorDimensaoCm) {
+
+    return Object.keys(VL_VEICULOS).find(function(veiculo) {
+        return pesoKg <= VL_VEICULOS[veiculo][1] && maiorDimensaoCm <= VL_VEICULOS[veiculo][2];
+    }) || "caminhao";
+
+}
+
+
+function vlNivelVeiculo(veiculo) {
+
+    return Object.keys(VL_VEICULOS).indexOf(veiculo);
+
+}
 
 
 
@@ -173,11 +201,17 @@ function vlEntregaCard(e, opcoes = {}) {
         '</div>' +
 
         '<div class="entrega-detalhes">' +
-            '<div><span>Retirada a partir de</span><strong>' + formatarData(e.data_retirada) + '</strong></div>' +
+            '<div><span>Retirada desejada</span><strong>' + formatarData(e.data_retirada) +
+                (e.horario_retirada ? ' às ' + escapeHtml(e.horario_retirada) : '') + '</strong></div>' +
             '<div><span>Carga</span><strong>' + vlEntregaPeso(e.peso_kg) + ' · ' + e.volumes +
                 (e.volumes === 1 ? ' volume' : ' volumes') + '</strong></div>' +
-            '<div><span>Tamanho</span><strong>' + escapeHtml(VL_ENTREGA_TAMANHOS[e.tamanho] || e.tamanho) + '</strong></div>' +
+            '<div><span>Dimensões aprox.</span><strong>' + (e.comprimento_cm
+                ? e.comprimento_cm + ' × ' + e.largura_cm + ' × ' + e.altura_cm + ' cm'
+                : escapeHtml(VL_ENTREGA_TAMANHOS[e.tamanho] || e.tamanho)) + '</strong></div>' +
+            '<div><span>Veículo mínimo</span><strong>' +
+                escapeHtml((VL_VEICULOS[e.veiculo_necessario] || [e.veiculo_necessario])[0]) + '</strong></div>' +
             '<div><span>Valor oferecido</span><strong class="entrega-valor">R$ ' + formatarMoeda(e.valor) + '</strong></div>' +
+            (e.solicitante ? '<div><span>Solicitante</span><strong>' + escapeHtml(e.solicitante) + '</strong></div>' : '') +
         '</div>' +
 
         (e.observacoes ? '<p class="entrega-obs"><i class="fa-solid fa-note-sticky"></i> ' + escapeHtml(e.observacoes) + '</p>' : '') +
@@ -204,17 +238,25 @@ function vlEntregaFormularioHtml() {
         '<h3><i class="fa-solid fa-box"></i> Mercadoria</h3>' +
         '<div class="entrega-form-grid">' +
             '<div><label>Origem do pedido</label><select name="plataforma" required>' + opcoes(VL_ENTREGA_PLATAFORMAS, "particular") + '</select></div>' +
-            '<div><label>Tamanho</label><select name="tamanho" required>' + opcoes(VL_ENTREGA_TAMANHOS, "pequeno") + '</select></div>' +
-            '<div><label>Peso total (kg)</label><input type="number" name="peso_kg" min="0.01" step="0.01" placeholder="Ex: 3.5" required></div>' +
-            '<div><label>Volumes</label><input type="number" name="volumes" min="1" max="999" value="1" required></div>' +
-            '<div class="largura-total"><label>Descrição da carga</label><textarea name="descricao" maxlength="500" rows="2" placeholder="Ex: 2 caixas de roupas de um pedido da Shopee" required></textarea></div>' +
+            '<div><label>Quantidade de volumes</label><input type="number" name="volumes" min="1" max="999" value="1" required></div>' +
+            '<div class="largura-total"><label>Descrição da mercadoria</label><textarea name="descricao" maxlength="500" rows="2" placeholder="Ex: 2 caixas de roupas de um pedido da Shopee" required></textarea></div>' +
+            '<div><label>Peso total aproximado (kg)</label><input type="number" name="peso_kg" min="0.01" step="0.01" placeholder="Ex: 3.5" class="entrega-calc" required></div>' +
+            '<div><label>Dimensões do maior volume (cm)</label><div class="entrega-dimensoes">' +
+                '<input type="number" name="comprimento_cm" min="1" max="1500" placeholder="Compr." aria-label="Comprimento (cm)" class="entrega-calc" required>' +
+                '<span>×</span><input type="number" name="largura_cm" min="1" max="1500" placeholder="Larg." aria-label="Largura (cm)" class="entrega-calc" required>' +
+                '<span>×</span><input type="number" name="altura_cm" min="1" max="1500" placeholder="Alt." aria-label="Altura (cm)" class="entrega-calc" required>' +
+            '</div></div>' +
+            '<div class="largura-total"><label>Veículo necessário</label><select name="veiculo_necessario" class="entrega-veiculo" required>' +
+                Object.keys(VL_VEICULOS).map(v => '<option value="' + v + '">' + VL_VEICULOS[v][0] + '</option>').join("") +
+            '</select><small class="entregas-ajuda entrega-veiculo-dica"></small></div>' +
         '</div>' +
 
         '<h3><i class="fa-solid fa-location-dot"></i> Retirada</h3>' +
         '<div class="entrega-form-grid">' +
             '<div class="largura-total"><label>Endereço de retirada</label><input type="text" name="retirada_endereco" maxlength="200" placeholder="Rua, número, bairro" required></div>' +
             '<div><label>Cidade</label><input type="text" name="retirada_cidade" maxlength="80" required></div>' +
-            '<div><label>Disponível para retirada a partir de</label><input type="date" name="data_retirada" class="entrega-data" required></div>' +
+            '<div><label>Data desejada para a retirada</label><input type="date" name="data_retirada" class="entrega-data" required></div>' +
+            '<div><label>Horário desejado</label><input type="time" name="horario_retirada" required></div>' +
             '<div><label>Responsável pela entrega ao motorista</label><input type="text" name="retirada_contato" maxlength="120" required></div>' +
             '<div><label>Telefone do responsável</label><input type="tel" name="retirada_telefone" maxlength="20" class="entrega-telefone" required></div>' +
         '</div>' +
@@ -244,6 +286,35 @@ function vlEntregaMontarFormulario(container) {
         campo.min = vlHojeIso();
     });
 
+    /* sugere o menor veículo em que a carga cabe e impede escolher um menor */
+    const veiculo = container.querySelector(".entrega-veiculo");
+    const dica = container.querySelector(".entrega-veiculo-dica");
+
+    function sugerirVeiculo() {
+        const valor = nome => Number(container.querySelector('[name="' + nome + '"]').value) || 0;
+        const minimo = vlVeiculoMinimo(
+            valor("peso_kg"),
+            Math.max(valor("comprimento_cm"), valor("largura_cm"), valor("altura_cm"))
+        );
+
+        Array.from(veiculo.options).forEach(function(opcao) {
+            opcao.disabled = vlNivelVeiculo(opcao.value) < vlNivelVeiculo(minimo);
+        });
+
+        if (vlNivelVeiculo(veiculo.value) < vlNivelVeiculo(minimo)) {
+            veiculo.value = minimo;
+        }
+
+        dica.innerHTML = '<i class="fa-solid fa-truck-fast"></i> Pelo peso e pelas dimensões, a carga precisa de pelo menos: <strong>' +
+            VL_VEICULOS[minimo][0] + '</strong>. Só motoristas com veículo compatível verão a entrega.';
+    }
+
+    container.querySelectorAll(".entrega-calc").forEach(function(campo) {
+        campo.addEventListener("input", sugerirVeiculo);
+    });
+
+    sugerirVeiculo();
+
     container.querySelectorAll(".entrega-telefone").forEach(function(campo) {
         campo.addEventListener("input", function() {
             const n = campo.value.replace(/\D/g, "").slice(0, 11);
@@ -266,6 +337,82 @@ function vlEntregaLerFormulario(formulario) {
 
 
 /* =====================================================
+ENTREGAS DO CLIENTE (Área de Envios e área do passageiro)
+===================================================== */
+
+
+let vlClienteEntregas = [];
+
+
+async function vlClienteCarregarEntregas() {
+
+    vlClienteEntregas = (await vlApi("entregas.php?acao=solicitadas")).entregas;
+
+    return vlClienteEntregas;
+
+}
+
+
+/* filtro: "andamento" (aguardando motorista ou em execução) ou "historico" */
+function vlClienteFiltrar(lista) {
+
+    return vlClienteEntregas.filter(function(e) {
+        const aberta = e.status === "disponivel" || VL_ENTREGA_ANDAMENTO.includes(e.status);
+        return lista === "historico" ? !aberta : aberta;
+    });
+
+}
+
+
+function vlClienteEntregaCard(e) {
+
+    let extra = "";
+
+    if (e.motorista_nome) {
+        extra = '<div class="entrega-motorista"><i class="fa-solid fa-id-card"></i><div>' +
+            '<span>Motorista responsável</span><strong>' + escapeHtml(e.motorista_nome) + '</strong>' +
+            '<small>' + escapeHtml([e.modelo_van, e.placa_van].filter(Boolean).join(" · ")) + '</small></div>' +
+            (VL_ENTREGA_ANDAMENTO.includes(e.status)
+                ? vlEntregaWhatsApp(e.motorista_telefone, "Falar com o motorista")
+                : "") +
+            '</div>';
+    } else if (e.status === "disponivel") {
+        extra = '<p class="entrega-obs"><i class="fa-solid fa-hourglass-half"></i> ' +
+            'Publicada. Aguardando um motorista compatível aceitar a entrega.</p>';
+    }
+
+    const acoes = e.status === "disponivel" || e.status === "aguardando_retirada"
+        ? '<button type="button" class="btn-cancelar-plano" onclick="vlClienteCancelarEntrega(' + Number(e.id) + ')">Cancelar solicitação</button>'
+        : "";
+
+    return vlEntregaCard(e, { extra: extra, acoes: acoes });
+
+}
+
+
+/* Cada página define window.vlClienteAposAlterar para recarregar a lista */
+async function vlClienteCancelarEntrega(id) {
+
+    if (!confirm("Cancelar esta solicitação de entrega?")) {
+        return;
+    }
+
+    try {
+        await vlApi("entregas.php?acao=cancelar", { id: id });
+        mostrarNotificacao("Solicitação cancelada.");
+    } catch (erro) {
+        mostrarNotificacao(erro.message);
+    }
+
+    if (typeof window.vlClienteAposAlterar === "function") {
+        window.vlClienteAposAlterar();
+    }
+
+}
+
+
+
+/* =====================================================
 PAINEL DO MOTORISTA: ABA ENTREGAS
 ===================================================== */
 
@@ -275,6 +422,8 @@ let painelEntregasDisponiveis = [];
 let painelEntregasMinhas = [];
 
 let painelEntregasCapacidade = 0;
+
+let painelEntregasPerfil = null;
 
 let painelEntregasListaAtual = "disponiveis";
 
@@ -291,7 +440,8 @@ async function painelEntregasCarregar() {
         ]);
 
         painelEntregasDisponiveis = disponiveis.entregas;
-        painelEntregasCapacidade = disponiveis.capacidade_carga_kg;
+        painelEntregasCapacidade = disponiveis.perfil.capacidade_carga_kg;
+        painelEntregasPerfil = disponiveis.perfil;
         painelEntregasMinhas = minhas.entregas;
 
     } catch (erro) {
@@ -313,9 +463,13 @@ async function painelEntregasCarregar() {
     badge.style.display = andamento.length > 0 ? "inline-flex" : "none";
 
     document.getElementById("entregasCapacidadeInfo").innerHTML =
-        '<i class="fa-solid fa-weight-hanging"></i> Mostrando entregas de até <strong>' +
+        '<i class="fa-solid fa-truck-fast"></i> Compatíveis com: <strong>' +
+        escapeHtml(VL_VEICULOS[painelEntregasPerfil.tipo_veiculo][0]) + '</strong> · até <strong>' +
         vlEntregaPeso(painelEntregasCapacidade) + '</strong> · ' +
-        '<a href="#servicos" onclick="mostrarAba(\'servicos\'); return false;">alterar</a>';
+        (painelEntregasPerfil.regioes.length
+            ? 'cidades: <strong>' + escapeHtml(painelEntregasPerfil.regioes.join(", ")) + '</strong>'
+            : 'todas as cidades') +
+        ' · <a href="#servicos" onclick="mostrarAba(\'servicos\'); return false;">alterar</a>';
 
     return true;
 
@@ -351,7 +505,7 @@ function painelEntregasLista(lista) {
     if (lista === "disponiveis") {
 
         entregas = painelEntregasDisponiveis;
-        vazio = "Nenhuma entrega disponível para o seu veículo no momento. Volte mais tarde!";
+        vazio = "Nenhuma entrega compatível com o seu veículo e as suas cidades no momento. Volte mais tarde!";
 
         container.innerHTML = entregas.length
             ? entregas.map(e => vlEntregaCard(e, {
@@ -483,6 +637,8 @@ function painelServicosPreencher() {
     document.getElementById("servicoPainelPassageiros").checked = Number(motorista.faz_passageiros) === 1;
     document.getElementById("servicoPainelEntregas").checked = Number(motorista.faz_entregas) === 1;
     document.getElementById("capacidadeCargaPainel").value = motorista.capacidade_carga_kg || "";
+    document.getElementById("tipoVeiculoPainel").value = motorista.tipo_veiculo || "van";
+    document.getElementById("regioesPainel").value = motorista.regioes || "";
 
     painelServicosAtualizarCampos();
 
@@ -518,7 +674,9 @@ document.addEventListener("DOMContentLoaded", function() {
             await vlApi("motorista.php?acao=servicos", {
                 faz_passageiros: fazPassageiros,
                 faz_entregas: fazEntregas,
-                capacidade_carga_kg: document.getElementById("capacidadeCargaPainel").value
+                capacidade_carga_kg: document.getElementById("capacidadeCargaPainel").value,
+                tipo_veiculo: document.getElementById("tipoVeiculoPainel").value,
+                regioes: document.getElementById("regioesPainel").value
             });
 
             vlUsuario = (await vlApi("auth.php?acao=sessao")).usuario;

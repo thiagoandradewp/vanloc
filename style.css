@@ -3806,6 +3806,8 @@ VERSÃO COM BANCO DE DADOS (API)
     position: absolute;
     opacity: 0;
     pointer-events: none;
+    width: 1px !important;
+    height: 1px;
 }
 
 .login-tipo span {
@@ -4300,7 +4302,8 @@ SERVIÇOS DO MOTORISTA E ENTREGAS
 .servico-opcao input {
     position: absolute;
     opacity: 0;
-    width: auto !important;
+    width: 1px !important;
+    height: 1px;
     pointer-events: none;
 }
 
@@ -4837,5 +4840,295 @@ SERVIÇOS DO MOTORISTA E ENTREGAS
 
     .entrega-codigo {
         margin-left: 0;
+    }
+}
+
+
+/* =====================================================
+ÁREA DE ENVIOS (envios.html) E CAMPOS DE COMPATIBILIDADE
+===================================================== */
+
+/* select com a mesma aparência dos inputs do modal */
+.campo-select {
+    width: 100%;
+    padding: 13px;
+    border: 1px solid #d0d5dd;
+    border-radius: 8px;
+    background: white;
+    font: inherit;
+    font-size: 14px;
+}
+
+a.logo {
+    text-decoration: none;
+}
+
+nav a.ativo {
+    color: #2563eb;
+    font-weight: 700;
+}
+
+a.btn-motorista {
+    font-weight: 500;
+}
+
+/* banner do index que leva à Área de Envios */
+.envios-banner {
+    margin-bottom: 24px;
+    background: linear-gradient(135deg, #1e40af, #2563eb);
+}
+
+.envios-banner span {
+    color: #bfdbfe;
+}
+
+.envios-banner p {
+    color: #dbeafe;
+}
+
+.botao-banner {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex: none;
+    background: white;
+    color: #1e40af;
+    padding: 16px 22px;
+    border-radius: 10px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+/* apresentação */
+.envios-hero {
+    padding: 60px 10% 40px;
+    background: linear-gradient(135deg, #eff6ff, #ffffff);
+    text-align: center;
+}
+
+.envios-selo {
+    display: inline-block;
+    padding: 7px 14px;
+    border-radius: 20px;
+    background: #dbeafe;
+    color: #2563eb;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .04em;
+}
+
+.envios-hero h1 {
+    margin: 16px 0 10px;
+    font-size: 38px;
+    color: #172554;
+}
+
+.envios-hero > p {
+    max-width: 680px;
+    margin: 0 auto;
+    color: #475467;
+    line-height: 1.6;
+}
+
+.envios-passos {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    max-width: 900px;
+    margin: 34px auto 0;
+    padding: 0;
+    list-style: none;
+    text-align: left;
+}
+
+.envios-passos li {
+    display: grid;
+    grid-template-columns: 42px 1fr;
+    column-gap: 12px;
+    padding: 16px;
+    border-radius: 14px;
+    background: white;
+    box-shadow: 0 8px 25px rgba(15, 23, 42, .06);
+}
+
+.envios-passos i {
+    grid-row: 1 / 3;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #eff6ff;
+    color: #2563eb;
+}
+
+.envios-passos strong {
+    color: #172554;
+    font-size: 14px;
+}
+
+.envios-passos span {
+    color: #667085;
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+/* conteúdo */
+.envios-conteudo {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 30px 16px 70px;
+}
+
+.envios-card {
+    background: white;
+    border-radius: 16px;
+    padding: 26px;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, .06);
+}
+
+.envios-card h2 {
+    color: #172554;
+    font-size: 20px;
+    margin-bottom: 14px;
+}
+
+.envios-card .painel-texto {
+    margin: -6px 0 14px;
+}
+
+.envios-acesso {
+    display: grid;
+    grid-template-columns: 1fr 1.6fr;
+    gap: 20px;
+    align-items: start;
+}
+
+.envios-acesso .login-tipo {
+    margin-bottom: 4px;
+}
+
+.envios-aviso {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+}
+
+.envios-aviso > i {
+    color: #2563eb;
+    font-size: 24px;
+    margin-top: 4px;
+}
+
+.envios-aviso p {
+    color: #475467;
+    line-height: 1.55;
+}
+
+.envios-aviso-acoes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.envios-aviso-acoes > * {
+    flex: none;
+    padding: 12px 18px;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.envios-conta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding: 16px 20px;
+    border-radius: 14px;
+    background: #172554;
+    color: white;
+}
+
+.envios-conta span {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: #93c5fd;
+}
+
+.envios-conta strong {
+    font-size: 16px;
+}
+
+.envios-conta-acoes {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+}
+
+.envios-conta-acoes a,
+.envios-conta-acoes button {
+    background: none;
+    color: white;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.entrega-dimensoes {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.entrega-dimensoes span {
+    color: #667085;
+}
+
+.entrega-dimensoes input {
+    min-width: 0;
+}
+
+.entrega-veiculo-dica i {
+    color: #2563eb;
+    margin-right: 4px;
+}
+
+.entrega-detalhes {
+    row-gap: 14px;
+}
+
+@media (max-width: 900px) {
+    .envios-acesso,
+    .envios-passos {
+        grid-template-columns: 1fr;
+    }
+
+    .envios-banner {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 18px;
+    }
+}
+
+@media (max-width: 600px) {
+    .envios-hero {
+        padding: 40px 16px 28px;
+    }
+
+    .envios-hero h1 {
+        font-size: 28px;
+    }
+
+    .envios-card {
+        padding: 18px;
     }
 }

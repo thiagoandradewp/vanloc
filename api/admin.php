@@ -302,7 +302,9 @@ switch (acao()) {
 
         $consulta = db()->prepare(
             "SELECT m.id, m.nome, m.email, m.telefone, m.cpf, m.modelo_van, m.placa_van, m.lugares_van,
-                    m.faz_passageiros, m.faz_entregas, m.capacidade_carga_kg, m.bloqueado, m.criado_em,
+                    m.faz_passageiros, m.faz_entregas, m.capacidade_carga_kg, m.tipo_veiculo, m.bloqueado, m.criado_em,
+                    (SELECT GROUP_CONCAT(r.cidade ORDER BY r.cidade SEPARATOR ', ')
+                        FROM motorista_regioes r WHERE r.motorista_id = m.id) AS regioes,
                     (SELECT COUNT(*) FROM viagens v WHERE v.motorista_id = m.id) AS viagens,
                     (SELECT COUNT(*) FROM viagens v WHERE v.motorista_id = m.id
                         AND v.status = 'ativa' AND v.data >= CURDATE()) AS viagens_ativas,
@@ -326,17 +328,20 @@ switch (acao()) {
         $q = termoBusca();
 
         $consulta = db()->prepare(
-            "SELECT p.id, p.nome, p.email, p.telefone, p.cidade, p.estado, p.bloqueado, p.criado_em,
-                    (SELECT COUNT(*) FROM reservas r WHERE r.passageiro_id = p.id) AS reservas
+            "SELECT p.id, p.nome, p.email, p.telefone, p.cidade, p.estado, p.tipo_conta, p.empresa_nome,
+                    p.documento, p.bloqueado, p.criado_em,
+                    (SELECT COUNT(*) FROM reservas r WHERE r.passageiro_id = p.id) AS reservas,
+                    (SELECT COUNT(*) FROM entregas e WHERE e.passageiro_id = p.id) AS entregas
              FROM passageiros p
              WHERE ? IS NULL OR p.nome LIKE ? OR p.email LIKE ? OR p.telefone LIKE ? OR p.cidade LIKE ?
+                OR p.empresa_nome LIKE ?
              ORDER BY p.criado_em DESC
              LIMIT " . VL_LIMITE_LISTA
         );
-        $consulta->execute([$q, $q, $q, $q, $q]);
+        $consulta->execute([$q, $q, $q, $q, $q, $q]);
 
         responder(['passageiros' => array_map(
-            fn($p) => numeros($p, ['id', 'bloqueado', 'reservas']),
+            fn($p) => numeros($p, ['id', 'bloqueado', 'reservas', 'entregas']),
             $consulta->fetchAll()
         )]);
 
@@ -512,16 +517,17 @@ switch (acao()) {
         };
 
         $consulta = db()->prepare(
-            'SELECT ' . VL_ENTREGA_CAMPOS . ', m.nome AS motorista_nome, p.nome AS cliente_nome
+            'SELECT ' . VL_ENTREGA_CAMPOS . ', m.nome AS motorista_nome, p.nome AS cliente_nome,
+                    p.tipo_conta AS cliente_tipo, p.empresa_nome AS cliente_empresa
              FROM entregas e
              LEFT JOIN motoristas m ON m.id = e.motorista_id
              LEFT JOIN passageiros p ON p.id = e.passageiro_id
              WHERE (? IS NULL OR e.codigo LIKE ? OR e.descricao LIKE ? OR e.retirada_cidade LIKE ?
-                    OR e.destino_cidade LIKE ? OR m.nome LIKE ? OR p.nome LIKE ?) ' . $filtroStatus . '
+                    OR e.destino_cidade LIKE ? OR m.nome LIKE ? OR p.nome LIKE ? OR p.empresa_nome LIKE ?) ' . $filtroStatus . '
              ORDER BY e.criado_em DESC
              LIMIT ' . VL_LIMITE_LISTA
         );
-        $consulta->execute([$q, $q, $q, $q, $q, $q, $q]);
+        $consulta->execute([$q, $q, $q, $q, $q, $q, $q, $q]);
 
         responder(['entregas' => array_map('formatarEntrega', $consulta->fetchAll())]);
 

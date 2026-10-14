@@ -2,7 +2,7 @@
 /* =====================================================
 VANLOC - Serviços oferecidos pelo motorista
 =====================================================
-POST motorista.php?acao=servicos   {faz_passageiros, faz_entregas, capacidade_carga_kg}
+POST motorista.php?acao=servicos   {faz_passageiros, faz_entregas, capacidade_carga_kg, tipo_veiculo, regioes}
 ===================================================== */
 
 require __DIR__ . '/bootstrap.php';
@@ -12,7 +12,7 @@ switch (acao()) {
     case 'servicos':
         exigirPost();
         $motoristaId = exigirLogin('motorista');
-        [$fazPassageiros, $fazEntregas, $capacidade] = lerServicosMotorista();
+        [$fazPassageiros, $fazEntregas, $capacidade, $tipoVeiculo, $regioes] = lerServicosMotorista();
 
         if (!$fazPassageiros) {
             $ativas = db()->prepare(
@@ -37,9 +37,17 @@ switch (acao()) {
             }
         }
 
-        db()->prepare(
-            'UPDATE motoristas SET faz_passageiros = ?, faz_entregas = ?, capacidade_carga_kg = ? WHERE id = ?'
-        )->execute([$fazPassageiros, $fazEntregas, $capacidade, $motoristaId]);
+        $pdo = db();
+        $pdo->beginTransaction();
+
+        $pdo->prepare(
+            'UPDATE motoristas SET faz_passageiros = ?, faz_entregas = ?, capacidade_carga_kg = ?, tipo_veiculo = ?
+             WHERE id = ?'
+        )->execute([$fazPassageiros, $fazEntregas, $capacidade, $tipoVeiculo, $motoristaId]);
+
+        salvarRegioesMotorista($motoristaId, $regioes);
+
+        $pdo->commit();
 
         responder(['ok' => true]);
 

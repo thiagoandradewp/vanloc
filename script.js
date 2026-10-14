@@ -1175,6 +1175,8 @@ vlFormMotorista
     dados.append("faz_passageiros", fazPassageiros ? "1" : "0");
     dados.append("faz_entregas", fazEntregas ? "1" : "0");
     dados.append("capacidade_carga_kg", document.getElementById("capacidadeCargaMotorista").value);
+    dados.append("tipo_veiculo", document.getElementById("tipoVeiculoMotorista").value);
+    dados.append("regioes", document.getElementById("regioesMotorista").value);
 
     dados.append("nome", document.getElementById("nomeMotorista").value);
     dados.append("telefone", document.getElementById("telefoneMotorista").value);
@@ -2421,6 +2423,7 @@ document.addEventListener("DOMContentLoaded", function () {
     aplicarMascara("telefoneMotorista", mascaraTelefone);
     aplicarMascara("campoTelefoneReserva", mascaraTelefone);
     aplicarMascara("dpTelefone", mascaraTelefone);
+    aplicarMascara("cadTelefone", mascaraTelefone);
     aplicarMascara("cpfMotorista", mascaraCpf);
     aplicarMascara("placaVan", function (v) {
         return v.toUpperCase().replace(/[^A-Z0-9-]/g, "").slice(0, 8);

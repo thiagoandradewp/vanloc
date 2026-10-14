@@ -321,14 +321,14 @@ function horario(string $campo): string
  * Serviços do motorista: transporte de passageiros, entregas
  * ou ambos. Sem os campos (formulários antigos), mantém o
  * padrão "só passageiros".
- * Retorna [faz_passageiros, faz_entregas, capacidade_carga_kg].
+ * Retorna [faz_passageiros, faz_entregas, capacidade_carga_kg, tipo_veiculo, regioes].
  */
 function lerServicosMotorista(): array
 {
     $dados = entrada();
 
     if (!array_key_exists('faz_passageiros', $dados) && !array_key_exists('faz_entregas', $dados)) {
-        return [1, 0, 0];
+        return [1, 0, 0, 'van', []];
     }
 
     $marcado = fn(string $campo) => in_array($dados[$campo] ?? '0', [true, 1, '1', 'true', 'on'], true) ? 1 : 0;
@@ -340,11 +340,66 @@ function lerServicosMotorista(): array
         erro('Escolha pelo menos um serviço: transporte de passageiros ou entregas.');
     }
 
+    $tipoVeiculo = (string) ($dados['tipo_veiculo'] ?? 'van');
+    if (!in_array($tipoVeiculo, ['moto', 'carro', 'utilitario', 'van', 'caminhao'], true)) {
+        erro('Escolha o tipo de veículo.');
+    }
+
     $capacidade = $fazEntregas
         ? inteiro('capacidade_carga_kg', 1, 30000, 'capacidade de carga (kg)')
         : 0;
 
-    return [$fazPassageiros, $fazEntregas, $capacidade];
+    /* cidades separadas por vírgula, ponto e vírgula ou quebra de linha */
+    $regioes = [];
+    foreach (preg_split('/[,;\n]+/', (string) ($dados['regioes'] ?? '')) as $cidade) {
+        $cidade = trim(preg_replace('/\s+/u', ' ', $cidade) ?? '');
+        if ($cidade === '') {
+            continue;
+        }
+        if (mb_strlen($cidade) > 80) {
+            erro('Cada cidade atendida pode ter no máximo 80 caracteres.');
+        }
+        $regioes[mb_strtolower($cidade)] ??= $cidade;
+    }
+
+    if (count($regioes) > 30) {
+        erro('Informe no máximo 30 cidades atendidas.');
+    }
+
+    return [$fazPassageiros, $fazEntregas, $capacidade, $tipoVeiculo, array_values($regioes)];
+}
+
+/**
+ * Conta de cliente: pessoa física ou empresa (loja, comércio).
+ * Retorna [tipo_conta, empresa_nome, documento (só dígitos)].
+ */
+function lerDadosCliente(): array
+{
+    $tipo = (string) (entrada()['tipo_conta'] ?? 'pessoa');
+
+    if (!in_array($tipo, ['pessoa', 'empresa'], true)) {
+        erro('Tipo de conta inválido.');
+    }
+
+    $empresa = $tipo === 'empresa' ? texto('empresa_nome', 120, true, 'nome da empresa ou loja') : '';
+    $documento = preg_replace('/\D/', '', (string) (entrada()['documento'] ?? '')) ?? '';
+
+    if ($documento !== '' && !in_array(strlen($documento), [11, 14], true)) {
+        erro('Informe um CPF (11 dígitos) ou CNPJ (14 dígitos) válido, ou deixe em branco.');
+    }
+
+    return [$tipo, $empresa, $documento];
+}
+
+/** Substitui as cidades atendidas pelo motorista */
+function salvarRegioesMotorista(int $motoristaId, array $regioes): void
+{
+    db()->prepare('DELETE FROM motorista_regioes WHERE motorista_id = ?')->execute([$motoristaId]);
+
+    $insere = db()->prepare('INSERT IGNORE INTO motorista_regioes (motorista_id, cidade) VALUES (?, ?)');
+    foreach ($regioes as $cidade) {
+        $insere->execute([$motoristaId, $cidade]);
+    }
 }
 
 
