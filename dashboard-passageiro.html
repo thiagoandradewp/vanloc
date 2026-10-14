@@ -26,6 +26,7 @@
             <button class="ativo" data-aba="inicio" onclick="dpMostrarAba('inicio')"><i class="fa-solid fa-house"></i> Visão geral</button>
             <button data-aba="perfil" onclick="dpMostrarAba('perfil')"><i class="fa-solid fa-user"></i> Meu perfil</button>
             <button data-aba="reservas" onclick="dpMostrarAba('reservas')"><i class="fa-solid fa-ticket"></i> Minhas reservas</button>
+            <button data-aba="entregas" onclick="dpMostrarAba('entregas')"><i class="fa-solid fa-box"></i> Entregas</button>
             <button data-aba="favoritos" onclick="dpMostrarAba('favoritos')"><i class="fa-solid fa-heart"></i> Favoritos</button>
             <button data-aba="notificacoes" onclick="dpMostrarAba('notificacoes')"><i class="fa-solid fa-bell"></i> Notificações</button>
         </nav>
@@ -92,6 +93,24 @@
                 <div class="dp-card" id="dpListaReservas"></div>
             </section>
 
+            <section id="dpAbaEntregas" class="dp-aba">
+                <div class="dp-titulo-acao">
+                    <div>
+                        <h1>Entregas</h1>
+                        <p class="dp-subtitle">Envie mercadorias com motoristas da VANLOC e acompanhe cada etapa.</p>
+                    </div>
+                    <button type="button" class="dp-btn" id="dpBotaoNovaEntrega" onclick="dpAbrirFormEntrega()"><i class="fa-solid fa-plus"></i> Solicitar entrega</button>
+                </div>
+                <form id="dpFormEntrega" class="dp-card entrega-form" style="display:none">
+                    <h2>Nova solicitação de entrega</h2>
+                    <div id="dpCamposEntrega"></div>
+                    <div class="dp-actions">
+                        <button type="button" class="dp-btn secondary" onclick="dpFecharFormEntrega()">Cancelar</button>
+                        <button type="submit" class="dp-btn"><i class="fa-solid fa-paper-plane"></i> Enviar solicitação</button>
+                    </div>
+                </form>
+                <div class="dp-card" id="dpListaEntregas"></div>
+            </section>
             <section id="dpAbaFavoritos" class="dp-aba">
                 <h1>Favoritos</h1>
                 <p class="dp-subtitle">Motoristas e rotas que você pretende acompanhar.</p>
@@ -107,6 +126,7 @@
     </main>
 </div>
 <script src="script.js"></script>
+<script src="entregas.js"></script>
 <script src="dashboard-passageiro.js"></script>
 </body>
 </html>

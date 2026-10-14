@@ -62,6 +62,12 @@ switch (acao()) {
         exigirPost();
         $motoristaId = exigirLogin('motorista');
 
+        $servico = db()->prepare('SELECT faz_passageiros FROM motoristas WHERE id = ?');
+        $servico->execute([$motoristaId]);
+        if ((int) $servico->fetchColumn() !== 1) {
+            erro('Ative o transporte de passageiros em "Meus serviços" para publicar viagens.', 403);
+        }
+
         $origem = texto('origem', 80, true, 'origem');
         $destino = texto('destino', 80, true, 'destino');
         $data = dataFutura('data');

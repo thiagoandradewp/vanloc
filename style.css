@@ -4265,3 +4265,577 @@ PAINEL ADMINISTRATIVO (admin.html)
         grid-template-columns: 120px 1fr 32px;
     }
 }
+
+
+/* =====================================================
+SERVIÇOS DO MOTORISTA E ENTREGAS
+===================================================== */
+
+/* menus de serviços que o motorista não oferece */
+.painel-nav-item[hidden] {
+    display: none !important;
+}
+
+.painel-texto {
+    font-size: 13px;
+    color: #667085;
+    line-height: 1.5;
+    margin: -8px 0 18px;
+}
+
+/* Escolha de serviços (cadastro e "Meus serviços") */
+
+.servicos-opcoes {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.servico-opcao {
+    display: block;
+    margin: 0 !important;
+    cursor: pointer;
+}
+
+.servico-opcao input {
+    position: absolute;
+    opacity: 0;
+    width: auto !important;
+    pointer-events: none;
+}
+
+.servico-opcao span {
+    display: grid;
+    grid-template-columns: 34px 1fr;
+    grid-template-rows: auto auto;
+    column-gap: 10px;
+    row-gap: 2px;
+    height: 100%;
+    padding: 14px;
+    border: 1px solid #d0d5dd;
+    border-radius: 12px;
+    background: white;
+    transition: all .2s;
+}
+
+.servico-opcao span i {
+    grid-row: 1 / 3;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #eff6ff;
+    color: #2563eb;
+}
+
+.servico-opcao strong {
+    font-size: 14px;
+    color: #172554;
+}
+
+.servico-opcao small {
+    font-size: 12px;
+    font-weight: 400;
+    color: #667085;
+    line-height: 1.4;
+}
+
+.servico-opcao input:checked + span {
+    border-color: #2563eb;
+    background: #eff6ff;
+    box-shadow: 0 0 0 1px #2563eb inset;
+}
+
+.servico-opcao input:checked + span i {
+    background: #2563eb;
+    color: white;
+}
+
+.servico-opcao input:focus-visible + span {
+    outline: 2px solid #2563eb;
+    outline-offset: 2px;
+}
+
+/* Aviso de pagamento no modal de reserva */
+
+.aviso-pagamento {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    margin-top: 22px;
+    padding: 14px 16px;
+    border: 2px solid #f59e0b;
+    border-radius: 10px;
+    background: #fffbeb;
+}
+
+.aviso-pagamento i {
+    color: #b45309;
+    font-size: 20px;
+    margin-top: 2px;
+}
+
+.aviso-pagamento strong {
+    display: block;
+    color: #92400e;
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: .02em;
+    line-height: 1.35;
+}
+
+.aviso-pagamento p {
+    margin: 4px 0 0;
+    color: #78350f;
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+/* Abas internas da seção de entregas */
+
+.entregas-abas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid #e4e7ec;
+    padding-bottom: 12px;
+}
+
+.entregas-aba {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 14px;
+    border: 0;
+    border-radius: 8px;
+    background: #f2f4f7;
+    color: #475467;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.entregas-aba.ativo {
+    background: #2563eb;
+    color: white;
+}
+
+.entregas-contador {
+    min-width: 20px;
+    padding: 1px 6px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, .25);
+    font-size: 11px;
+    text-align: center;
+}
+
+.entregas-aba:not(.ativo) .entregas-contador {
+    background: #e4e7ec;
+}
+
+.entregas-capacidade {
+    font-size: 12px;
+    color: #667085;
+}
+
+.entregas-capacidade a {
+    color: #2563eb;
+    font-weight: 600;
+}
+
+.entregas-ajuda {
+    display: block;
+    margin-top: 8px;
+    font-size: 12px;
+    color: #667085;
+}
+
+.entregas-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+/* Cartão de entrega */
+
+.entrega-card {
+    border: 1px solid #e4e7ec;
+    border-left: 4px solid #2563eb;
+    border-radius: 12px;
+    padding: 18px;
+    background: white;
+    margin-bottom: 14px;
+}
+
+.entregas-lista .entrega-card {
+    margin-bottom: 0;
+}
+
+.entrega-card.status-entregue { border-left-color: #22c55e; }
+.entrega-card.status-cancelada { border-left-color: #98a2b3; }
+.entrega-card.status-disponivel,
+.entrega-card.status-aguardando_retirada { border-left-color: #f59e0b; }
+
+.entrega-topo {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.entrega-plataforma {
+    padding: 4px 10px;
+    border-radius: 20px;
+    background: #eff6ff;
+    color: #1d4ed8;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.entrega-plataforma.plataforma-mercado_livre { background: #fef9c3; color: #854d0e; }
+.entrega-plataforma.plataforma-shopee { background: #ffedd5; color: #c2410c; }
+.entrega-plataforma.plataforma-amazon { background: #f1f5f9; color: #0f172a; }
+
+.entrega-codigo {
+    margin-left: auto;
+    font-size: 12px;
+    font-weight: 700;
+    color: #667085;
+}
+
+.status-reserva.andamento {
+    background: #eff6ff;
+    color: #2563eb;
+}
+
+.entrega-descricao {
+    margin: 0 0 14px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #172554;
+}
+
+.entrega-rota {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: start;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 10px;
+    background: #f7f9fc;
+    margin-bottom: 14px;
+}
+
+.entrega-rota span,
+.entrega-detalhes span,
+.entrega-contatos span,
+.entrega-motorista span {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+    color: #667085;
+    margin-bottom: 4px;
+}
+
+.entrega-rota strong {
+    font-size: 13px;
+    color: #172554;
+    font-weight: 600;
+}
+
+.entrega-rota small {
+    color: #667085;
+    font-weight: 400;
+}
+
+.entrega-seta {
+    color: #2563eb;
+    margin-top: 22px;
+}
+
+.entrega-detalhes {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+}
+
+.entrega-detalhes strong {
+    font-size: 13px;
+    color: #172554;
+}
+
+.entrega-valor {
+    color: #15803d !important;
+    font-size: 16px !important;
+}
+
+.entrega-obs {
+    margin: 12px 0 0;
+    font-size: 13px;
+    color: #475467;
+}
+
+.entrega-obs i {
+    color: #2563eb;
+    margin-right: 4px;
+}
+
+.entrega-contatos {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px dashed #e4e7ec;
+}
+
+.entrega-contatos strong {
+    display: block;
+    font-size: 13px;
+    color: #172554;
+}
+
+.entrega-whatsapp {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 4px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #15803d;
+    text-decoration: none;
+}
+
+.entrega-motorista {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    margin-top: 14px;
+    padding: 12px;
+    border-radius: 10px;
+    background: #f0fdf4;
+}
+
+.entrega-motorista > i {
+    color: #15803d;
+    font-size: 18px;
+}
+
+.entrega-motorista strong {
+    display: block;
+    color: #172554;
+}
+
+.entrega-motorista small {
+    color: #667085;
+}
+
+.entrega-motorista .entrega-whatsapp {
+    margin-left: auto;
+}
+
+.entrega-acoes {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.entrega-acoes button {
+    flex: none;
+    padding: 11px 18px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* Etapas: Aguardando retirada → Coletada → Em trânsito → Entregue */
+
+.entrega-etapas {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    list-style: none;
+    padding: 0;
+    margin: 16px 0 0;
+}
+
+.entrega-etapas li {
+    position: relative;
+    text-align: center;
+    padding: 0 4px;
+}
+
+.entrega-etapas li::before {
+    content: "";
+    position: absolute;
+    top: 13px;
+    left: -50%;
+    width: 100%;
+    height: 3px;
+    background: #e4e7ec;
+    z-index: 0;
+}
+
+.entrega-etapas li:first-child::before {
+    display: none;
+}
+
+.entrega-etapas li.feita::before,
+.entrega-etapas li.atual::before {
+    background: #2563eb;
+}
+
+.entrega-etapa-ponto {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #e4e7ec;
+    color: transparent;
+    font-size: 12px;
+}
+
+.entrega-etapas li.feita .entrega-etapa-ponto,
+.entrega-etapas li.atual .entrega-etapa-ponto {
+    background: #2563eb;
+    color: white;
+}
+
+.entrega-etapas li.atual .entrega-etapa-ponto {
+    box-shadow: 0 0 0 4px #bfdbfe;
+}
+
+.entrega-etapas strong {
+    display: block;
+    margin-top: 6px;
+    font-size: 12px;
+    color: #172554;
+}
+
+.entrega-etapas li:not(.feita):not(.atual) strong {
+    color: #98a2b3;
+}
+
+.entrega-etapas small {
+    display: block;
+    font-size: 11px;
+    color: #667085;
+}
+
+.entrega-etapas.cancelada li.feita::before,
+.entrega-etapas.cancelada li.feita .entrega-etapa-ponto {
+    background: #98a2b3;
+}
+
+/* Formulário de solicitação de entrega */
+
+.entrega-form h3 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 18px 0 4px;
+    font-size: 15px;
+    color: #172554;
+}
+
+.entrega-form h3 i {
+    color: #2563eb;
+}
+
+.entrega-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 14px;
+}
+
+.entrega-form-grid .largura-total {
+    grid-column: 1 / -1;
+}
+
+.entrega-form-grid label {
+    display: block;
+    margin: 12px 0 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #344054;
+}
+
+.entrega-form-grid input,
+.entrega-form-grid select,
+.entrega-form-grid textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 11px 12px;
+    border: 1px solid #d0d5dd;
+    border-radius: 8px;
+    background: white;
+    font: inherit;
+    font-size: 14px;
+}
+
+.entrega-form-grid textarea {
+    resize: vertical;
+}
+
+.dp-titulo-acao {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+}
+
+.dp-titulo-acao .dp-btn {
+    flex: none;
+}
+
+@media (max-width: 900px) {
+    .painel-nav {
+        flex-wrap: wrap;
+    }
+
+    .entrega-detalhes {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 600px) {
+    .servicos-opcoes,
+    .entrega-form-grid,
+    .entrega-contatos {
+        grid-template-columns: 1fr;
+    }
+
+    .entrega-rota {
+        grid-template-columns: 1fr;
+    }
+
+    .entrega-seta {
+        transform: rotate(90deg);
+        margin: 0;
+    }
+
+    .entrega-etapas strong {
+        font-size: 10px;
+    }
+
+    .entrega-acoes button {
+        flex: 1;
+    }
+
+    .entrega-codigo {
+        margin-left: 0;
+    }
+}

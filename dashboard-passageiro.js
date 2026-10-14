@@ -12,7 +12,7 @@ function dpPassageiroAtual() {
 }
 
 function dpMostrarAba(aba) {
-    ["inicio", "perfil", "reservas", "favoritos", "notificacoes"].forEach(function(item) {
+    ["inicio", "perfil", "reservas", "entregas", "favoritos", "notificacoes"].forEach(function(item) {
         const secao = document.getElementById("dpAba" + item.charAt(0).toUpperCase() + item.slice(1));
         if (secao) secao.classList.toggle("ativa", item === aba);
     });
@@ -20,6 +20,10 @@ function dpMostrarAba(aba) {
         botao.classList.toggle("ativo", botao.dataset.aba === aba);
     });
     window.scrollTo({top: 0, behavior: "smooth"});
+
+    if (aba === "entregas") {
+        dpCarregarEntregas();
+    }
 }
 
 function dpInicial(texto) {
@@ -213,6 +217,8 @@ document.addEventListener("DOMContentLoaded", async function() {
 
     if (window.location.hash === "#reservas") {
         dpMostrarAba("reservas");
+    } else if (window.location.hash === "#entregas") {
+        dpMostrarAba("entregas");
     }
 
     const inputFoto = document.getElementById("dpFotoInput");
@@ -274,6 +280,103 @@ document.addEventListener("DOMContentLoaded", async function() {
             alert("Perfil atualizado com sucesso!");
         });
     }
+});
+
+/* =====================================================
+ENTREGAS (solicitações do cliente)
+===================================================== */
+
+async function dpCarregarEntregas() {
+    const lista = document.getElementById("dpListaEntregas");
+    let entregas;
+
+    try {
+        entregas = (await vlApi("entregas.php?acao=solicitadas")).entregas;
+    } catch (erro) {
+        lista.innerHTML = '<div class="dp-empty">' + dpEscape(erro.message) + '</div>';
+        return;
+    }
+
+    lista.innerHTML = entregas.length
+        ? '<h2>Minhas entregas</h2>' + entregas.map(dpRenderEntrega).join("")
+        : '<div class="dp-empty">Você ainda não solicitou nenhuma entrega.<br><br>' +
+          'Use o botão <strong>Solicitar entrega</strong> para enviar uma encomenda.</div>';
+}
+
+function dpRenderEntrega(e) {
+    let extra = "";
+
+    if (e.motorista_nome) {
+        extra = '<div class="entrega-motorista"><i class="fa-solid fa-id-card"></i><div>' +
+            '<span>Motorista</span><strong>' + dpEscape(e.motorista_nome) + '</strong>' +
+            '<small>' + dpEscape([e.modelo_van, e.placa_van].filter(Boolean).join(" · ")) + '</small></div>' +
+            (["aguardando_retirada", "coletada", "em_transito"].includes(e.status)
+                ? vlEntregaWhatsApp(e.motorista_telefone, "Falar com o motorista")
+                : "") +
+            '</div>';
+    } else if (e.status === "disponivel") {
+        extra = '<p class="entrega-obs"><i class="fa-solid fa-hourglass-half"></i> ' +
+            'Aguardando um motorista compatível aceitar a entrega.</p>';
+    }
+
+    const acoes = e.status === "disponivel" || e.status === "aguardando_retirada"
+        ? '<button type="button" class="dp-btn secondary" onclick="dpCancelarEntrega(' + Number(e.id) + ')">Cancelar solicitação</button>'
+        : "";
+
+    return vlEntregaCard(e, { extra: extra, acoes: acoes });
+}
+
+function dpAbrirFormEntrega() {
+    const form = document.getElementById("dpFormEntrega");
+
+    if (!form.dataset.montado) {
+        vlEntregaMontarFormulario(document.getElementById("dpCamposEntrega"));
+        form.dataset.montado = "1";
+    }
+
+    form.style.display = "block";
+    document.getElementById("dpBotaoNovaEntrega").style.display = "none";
+    form.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function dpFecharFormEntrega() {
+    const form = document.getElementById("dpFormEntrega");
+    form.reset();
+    form.style.display = "none";
+    document.getElementById("dpBotaoNovaEntrega").style.display = "";
+}
+
+async function dpCancelarEntrega(id) {
+    if (!confirm("Cancelar esta solicitação de entrega?")) return;
+
+    try {
+        await vlApi("entregas.php?acao=cancelar", { id: id });
+    } catch (erro) {
+        alert(erro.message);
+    }
+
+    dpCarregarEntregas();
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+    const form = document.getElementById("dpFormEntrega");
+    if (!form) return;
+
+    form.addEventListener("submit", async function(event) {
+        event.preventDefault();
+        vlBotaoCarregando(form, true);
+
+        try {
+            const resposta = await vlApi("entregas.php?acao=solicitar", vlEntregaLerFormulario(form));
+            vlBotaoCarregando(form, false);
+            dpFecharFormEntrega();
+            alert("Solicitação " + resposta.codigo + " enviada! Ela já está visível para os motoristas compatíveis.");
+            dpCarregarEntregas();
+        } catch (erro) {
+            vlBotaoCarregando(form, false);
+            alert(erro.message);
+        }
+    });
 });
 
 function dpSair() {

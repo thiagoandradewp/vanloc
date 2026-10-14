@@ -22,9 +22,13 @@ POST admin.php?acao=bloquear          {tipo: motorista|passageiro, id, bloqueado
 POST admin.php?acao=excluir           {tipo: motorista|passageiro, id}
 POST admin.php?acao=cancelar_viagem   {id}
 POST admin.php?acao=status_reserva    {id, status: confirmada|recusada|cancelada}
+GET  admin.php?acao=entregas          ?q= &status=
+POST admin.php?acao=criar_entrega     dados da entrega (ex: pedido de loja parceira)
+POST admin.php?acao=cancelar_entrega  {id}
 ===================================================== */
 
 require __DIR__ . '/bootstrap.php';
+require __DIR__ . '/entregas-comum.php';
 
 const VL_LIMITE_LISTA = 500;
 
@@ -298,7 +302,7 @@ switch (acao()) {
 
         $consulta = db()->prepare(
             "SELECT m.id, m.nome, m.email, m.telefone, m.cpf, m.modelo_van, m.placa_van, m.lugares_van,
-                    m.bloqueado, m.criado_em,
+                    m.faz_passageiros, m.faz_entregas, m.capacidade_carga_kg, m.bloqueado, m.criado_em,
                     (SELECT COUNT(*) FROM viagens v WHERE v.motorista_id = m.id) AS viagens,
                     (SELECT COUNT(*) FROM viagens v WHERE v.motorista_id = m.id
                         AND v.status = 'ativa' AND v.data >= CURDATE()) AS viagens_ativas,
@@ -312,7 +316,8 @@ switch (acao()) {
         $consulta->execute([$q, $q, $q, $q, $q]);
 
         responder(['motoristas' => array_map(
-            fn($m) => numeros($m, ['id', 'lugares_van', 'bloqueado', 'viagens', 'viagens_ativas', 'reservas_confirmadas']),
+            fn($m) => numeros($m, ['id', 'lugares_van', 'faz_passageiros', 'faz_entregas', 'capacidade_carga_kg',
+                                   'bloqueado', 'viagens', 'viagens_ativas', 'reservas_confirmadas']),
             $consulta->fetchAll()
         )]);
 
@@ -428,6 +433,10 @@ switch (acao()) {
         $fotos->execute([$id]);
         $fotos = $fotos->fetchAll(PDO::FETCH_COLUMN);
 
+        /* entregas aceitas voltam a ficar disponíveis; as solicitadas
+        por um cliente excluído são canceladas */
+        liberarEntregasDaConta($tipo, $id);
+
         /* viagens, planos e reservas são apagados em cascata */
         $apaga = db()->prepare("DELETE FROM {$tabela} WHERE id = ?");
         $apaga->execute([$id]);
@@ -481,6 +490,60 @@ switch (acao()) {
 
         if ($atualiza->rowCount() === 0) {
             erro('Reserva não encontrada ou já finalizada.', 409);
+        }
+
+        responder(['ok' => true]);
+
+
+
+    /* -------------------------------------------------
+    ENTREGAS
+    ------------------------------------------------- */
+
+    case 'entregas':
+        exigirLogin('admin');
+        $q = termoBusca();
+        $status = (string) ($_GET['status'] ?? '');
+
+        $filtroStatus = match ($status) {
+            'disponivel', 'entregue', 'cancelada' => "AND e.status = '{$status}'",
+            'andamento' => "AND e.status IN ('aguardando_retirada', 'coletada', 'em_transito')",
+            default => '',
+        };
+
+        $consulta = db()->prepare(
+            'SELECT ' . VL_ENTREGA_CAMPOS . ', m.nome AS motorista_nome, p.nome AS cliente_nome
+             FROM entregas e
+             LEFT JOIN motoristas m ON m.id = e.motorista_id
+             LEFT JOIN passageiros p ON p.id = e.passageiro_id
+             WHERE (? IS NULL OR e.codigo LIKE ? OR e.descricao LIKE ? OR e.retirada_cidade LIKE ?
+                    OR e.destino_cidade LIKE ? OR m.nome LIKE ? OR p.nome LIKE ?) ' . $filtroStatus . '
+             ORDER BY e.criado_em DESC
+             LIMIT ' . VL_LIMITE_LISTA
+        );
+        $consulta->execute([$q, $q, $q, $q, $q, $q, $q]);
+
+        responder(['entregas' => array_map('formatarEntrega', $consulta->fetchAll())]);
+
+    case 'criar_entrega':
+        exigirPost();
+        exigirLogin('admin');
+
+        responder(['ok' => true, 'codigo' => criarEntrega(null)], 201);
+
+    case 'cancelar_entrega':
+        exigirPost();
+        exigirLogin('admin');
+        $id = inteiro('id', 1, PHP_INT_MAX, 'entrega');
+
+        $cancela = db()->prepare(
+            "UPDATE entregas SET status = 'cancelada', cancelada_em = NOW()
+             WHERE id = ? AND status IN ('disponivel', 'aguardando_retirada', 'coletada', 'em_transito')"
+        );
+        $cancela->execute([$id]);
+
+        if ($cancela->rowCount() === 0) {
+            erro('Entrega não encontrada ou já finalizada.', 409);
         }
 
         responder(['ok' => true]);

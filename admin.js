@@ -12,12 +12,13 @@ const ADMIN_STATUS_RESERVA = {
     cancelada: "Cancelada"
 };
 
-const ADMIN_ABAS = ["resumo", "reservas", "viagens", "motoristas", "passageiros", "admins"];
+const ADMIN_ABAS = ["resumo", "reservas", "viagens", "entregas", "motoristas", "passageiros", "admins"];
 
 const ADMIN_CARREGAR = {
     resumo: adminCarregarResumo,
     reservas: adminCarregarReservas,
     viagens: adminCarregarViagens,
+    entregas: adminCarregarEntregas,
     motoristas: adminCarregarMotoristas,
     passageiros: adminCarregarPassageiros,
     admins: adminCarregarAdmins
@@ -381,6 +382,75 @@ async function adminCancelarViagem(id) {
 
 
 /* =====================================================
+ENTREGAS
+===================================================== */
+
+async function adminCarregarEntregas() {
+    adminCarregando("listaAdminEntregas");
+    let entregas;
+
+    try {
+        entregas = (await vlApi("admin.php?acao=entregas&" + adminParametros("filtroEntregasQ", "filtroEntregasStatus"))).entregas;
+    } catch (erro) {
+        adminErro(erro);
+        return;
+    }
+
+    document.getElementById("listaAdminEntregas").innerHTML = adminTabela(
+        ["Código", "Carga", "Rota", "Retirada", "Valor", "Solicitante", "Motorista", "Status", "Ações"],
+        entregas.map(e => [
+            escapeHtml(e.codigo) + "<br><small>" + adminDataHora(e.criado_em) + "</small>",
+            escapeHtml(e.descricao) + "<br><small>" + escapeHtml(VL_ENTREGA_PLATAFORMAS[e.plataforma] || e.plataforma) +
+                " · " + vlEntregaPeso(e.peso_kg) + " · " + e.volumes + " vol.</small>",
+            escapeHtml(e.retirada_cidade) + " → " + escapeHtml(e.destino_cidade),
+            formatarData(e.data_retirada),
+            "R$ " + formatarMoeda(e.valor),
+            e.cliente_nome ? escapeHtml(e.cliente_nome) : "<small>Cadastrada pela administração</small>",
+            e.motorista_nome ? escapeHtml(e.motorista_nome) : "—",
+            vlEntregaChip(e.status),
+            ["entregue", "cancelada"].includes(e.status)
+                ? ""
+                : adminBotao("Cancelar", "vermelho", "adminCancelarEntrega(" + e.id + ")")
+        ]),
+        "Nenhuma entrega encontrada."
+    );
+}
+
+function adminAbrirFormEntrega() {
+    const form = document.getElementById("formEntregaAdmin");
+
+    if (!form.dataset.montado) {
+        vlEntregaMontarFormulario(document.getElementById("camposEntregaAdmin"));
+        form.dataset.montado = "1";
+    }
+
+    form.style.display = "block";
+    document.getElementById("botaoNovaEntregaAdmin").style.display = "none";
+}
+
+function adminFecharFormEntrega() {
+    const form = document.getElementById("formEntregaAdmin");
+    form.reset();
+    form.style.display = "none";
+    document.getElementById("botaoNovaEntregaAdmin").style.display = "";
+}
+
+async function adminCancelarEntrega(id) {
+    if (!confirm("Cancelar esta entrega? Ela sai da lista do motorista e do cliente como cancelada.")) return;
+
+    try {
+        await vlApi("admin.php?acao=cancelar_entrega", { id: id });
+    } catch (erro) {
+        adminErro(erro);
+        return;
+    }
+
+    mostrarNotificacao("Entrega cancelada.");
+    adminCarregarEntregas();
+}
+
+
+/* =====================================================
 MOTORISTAS E PASSAGEIROS
 ===================================================== */
 
@@ -418,7 +488,11 @@ async function adminCarregarMotoristas() {
             adminNomeConta(m),
             escapeHtml(m.telefone) + "<br><small>CPF " + escapeHtml(m.cpf || "—") + "</small>",
             escapeHtml(m.modelo_van || "—") + "<br><small>" + escapeHtml(m.placa_van || "") +
-                (m.lugares_van ? " · " + m.lugares_van + " lugares" : "") + "</small>",
+                (m.lugares_van ? " · " + m.lugares_van + " lugares" : "") + "</small>" +
+                "<br><small>" + [
+                    m.faz_passageiros ? "Passageiros" : "",
+                    m.faz_entregas ? "Entregas até " + m.capacidade_carga_kg + " kg" : ""
+                ].filter(Boolean).join(" · ") + "</small>",
             m.viagens_ativas + " ativas<br><small>" + m.viagens + " no total</small>",
             m.reservas_confirmadas,
             adminDataHora(m.criado_em),
@@ -557,7 +631,26 @@ document.addEventListener("DOMContentLoaded", function() {
     adminFiltro("filtroReservasStatus", adminCarregarReservas);
     adminFiltro("filtroViagensQ", adminCarregarViagens);
     adminFiltro("filtroViagensStatus", adminCarregarViagens);
+    adminFiltro("filtroEntregasQ", adminCarregarEntregas);
+    adminFiltro("filtroEntregasStatus", adminCarregarEntregas);
     adminFiltro("filtroMotoristasQ", adminCarregarMotoristas);
+
+    const formEntrega = document.getElementById("formEntregaAdmin");
+    formEntrega.addEventListener("submit", async function(event) {
+        event.preventDefault();
+        vlBotaoCarregando(formEntrega, true);
+
+        try {
+            const resposta = await vlApi("admin.php?acao=criar_entrega", vlEntregaLerFormulario(formEntrega));
+            vlBotaoCarregando(formEntrega, false);
+            adminFecharFormEntrega();
+            mostrarNotificacao("Entrega " + resposta.codigo + " publicada para os motoristas.");
+            adminCarregarEntregas();
+        } catch (erro) {
+            vlBotaoCarregando(formEntrega, false);
+            adminErro(erro);
+        }
+    });
     adminFiltro("filtroPassageirosQ", adminCarregarPassageiros);
 
     const formNovo = document.getElementById("formNovoAdmin");

@@ -6,7 +6,8 @@ GET  auth.php?acao=sessao                 usuário logado (ou null)
 POST auth.php?acao=login                  {tipo, email, senha}
 POST auth.php?acao=logout
 POST auth.php?acao=cadastrar_passageiro   {nome, email, telefone, cidade, estado, senha}
-POST auth.php?acao=cadastrar_motorista    multipart: dados do motorista + 1ª viagem + foto
+POST auth.php?acao=cadastrar_motorista    multipart: dados do motorista + serviços
+                                          (+ 1ª viagem e foto, se fizer transporte de passageiros)
 ===================================================== */
 
 require __DIR__ . '/bootstrap.php';
@@ -25,7 +26,8 @@ function dadosPassageiro(int $id): ?array
 function dadosMotorista(int $id): ?array
 {
     $consulta = db()->prepare(
-        'SELECT id, nome, email, telefone, modelo_van, placa_van, lugares_van
+        'SELECT id, nome, email, telefone, modelo_van, placa_van, lugares_van,
+                faz_passageiros, faz_entregas, capacidade_carga_kg
          FROM motoristas WHERE id = ? AND bloqueado = 0'
     );
     $consulta->execute([$id]);
@@ -135,13 +137,17 @@ switch (acao()) {
         $placaVan = mb_strtoupper(texto('placa_van', 10, true, 'placa'));
         $lugaresVan = inteiro('lugares_van', 1, 60, 'quantidade de lugares');
         $hash = senhaNova();
+        [$fazPassageiros, $fazEntregas, $capacidade] = lerServicosMotorista();
 
-        $origem = texto('origem', 80, true, 'origem');
-        $destino = texto('destino', 80, true, 'destino');
-        $data = dataFutura('data');
-        $horario = horario('horario');
-        $valor = decimal('valor', 0, 100000, 'valor da viagem');
-        $vagas = inteiro('vagas', 1, 60, 'vagas');
+        /* a primeira viagem só é exigida de quem transporta passageiros */
+        if ($fazPassageiros) {
+            $origem = texto('origem', 80, true, 'origem');
+            $destino = texto('destino', 80, true, 'destino');
+            $data = dataFutura('data');
+            $horario = horario('horario');
+            $valor = decimal('valor', 0, 100000, 'valor da viagem');
+            $vagas = inteiro('vagas', 1, 60, 'vagas');
+        }
 
         $existe = db()->prepare('SELECT 1 FROM motoristas WHERE email = ?');
         $existe->execute([$email]);
@@ -149,23 +155,27 @@ switch (acao()) {
             erro('Já existe um motorista com este email. Entre como motorista para cadastrar novas viagens.', 409);
         }
 
-        $foto = salvarImagem('foto', 'vans');
+        $foto = $fazPassageiros ? salvarImagem('foto', 'vans') : '';
 
         $pdo = db();
         $pdo->beginTransaction();
 
         try {
             $pdo->prepare(
-                'INSERT INTO motoristas (nome, email, senha_hash, telefone, cpf, modelo_van, placa_van, lugares_van)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
-            )->execute([$nome, $email, $hash, $telefone, $cpf, $modeloVan, $placaVan, $lugaresVan]);
+                'INSERT INTO motoristas (nome, email, senha_hash, telefone, cpf, modelo_van, placa_van, lugares_van,
+                                         faz_passageiros, faz_entregas, capacidade_carga_kg)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+            )->execute([$nome, $email, $hash, $telefone, $cpf, $modeloVan, $placaVan, $lugaresVan,
+                        $fazPassageiros, $fazEntregas, $capacidade]);
 
             $motoristaId = (int) $pdo->lastInsertId();
 
-            $pdo->prepare(
-                'INSERT INTO viagens (motorista_id, origem, destino, data, horario, valor, vagas, foto)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
-            )->execute([$motoristaId, $origem, $destino, $data, $horario, $valor, $vagas, $foto]);
+            if ($fazPassageiros) {
+                $pdo->prepare(
+                    'INSERT INTO viagens (motorista_id, origem, destino, data, horario, valor, vagas, foto)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+                )->execute([$motoristaId, $origem, $destino, $data, $horario, $valor, $vagas, $foto]);
+            }
 
             $pdo->commit();
         } catch (Throwable $e) {

@@ -1156,13 +1156,25 @@ vlFormMotorista
         return;
     }
 
+    const fazPassageiros = document.getElementById("servicoPassageiros").checked;
+    const fazEntregas = document.getElementById("servicoEntregas").checked;
+
+    if (!fazPassageiros && !fazEntregas) {
+        mostrarNotificacao("Escolha pelo menos um serviço: passageiros ou entregas.");
+        return;
+    }
+
     const fotoInput = document.getElementById("fotoVan");
 
-    if (!vlImagemValida(fotoInput.files[0])) {
+    if (fazPassageiros && !vlImagemValida(fotoInput.files[0])) {
         return;
     }
 
     const dados = new FormData();
+
+    dados.append("faz_passageiros", fazPassageiros ? "1" : "0");
+    dados.append("faz_entregas", fazEntregas ? "1" : "0");
+    dados.append("capacidade_carga_kg", document.getElementById("capacidadeCargaMotorista").value);
 
     dados.append("nome", document.getElementById("nomeMotorista").value);
     dados.append("telefone", document.getElementById("telefoneMotorista").value);
@@ -1172,15 +1184,18 @@ vlFormMotorista
     dados.append("modelo_van", document.getElementById("modeloVan").value);
     dados.append("placa_van", document.getElementById("placaVan").value);
     dados.append("lugares_van", document.getElementById("lugaresVan").value);
-    dados.append("origem", document.getElementById("origem").value);
-    dados.append("destino", document.getElementById("destino").value);
-    dados.append("data", document.getElementById("dataViagem").value);
-    dados.append("horario", document.getElementById("horarioViagem").value);
-    dados.append("valor", document.getElementById("valorViagem").value);
-    dados.append("vagas", document.getElementById("vagasViagem").value);
 
-    if (fotoInput.files.length > 0) {
-        dados.append("foto", fotoInput.files[0]);
+    if (fazPassageiros) {
+        dados.append("origem", document.getElementById("origem").value);
+        dados.append("destino", document.getElementById("destino").value);
+        dados.append("data", document.getElementById("dataViagem").value);
+        dados.append("horario", document.getElementById("horarioViagem").value);
+        dados.append("valor", document.getElementById("valorViagem").value);
+        dados.append("vagas", document.getElementById("vagasViagem").value);
+
+        if (fotoInput.files.length > 0) {
+            dados.append("foto", fotoInput.files[0]);
+        }
     }
 
     vlBotaoCarregando(formulario, true);
@@ -1207,6 +1222,37 @@ vlFormMotorista
 
     }, 1400);
 
+});
+
+
+/*
+Mostra a capacidade de carga só para quem faz entregas e
+a primeira viagem só para quem transporta passageiros
+(os campos escondidos deixam de ser obrigatórios).
+*/
+function vlAtualizarServicosCadastro() {
+
+    const fazPassageiros = document.getElementById("servicoPassageiros").checked;
+    const fazEntregas = document.getElementById("servicoEntregas").checked;
+    const secaoViagem = document.getElementById("secaoViagemMotorista");
+    const capacidade = document.getElementById("capacidadeCargaMotorista");
+
+    secaoViagem.style.display = fazPassageiros ? "" : "none";
+    secaoViagem.querySelectorAll("input").forEach(function(campo) {
+        campo.required = fazPassageiros;
+    });
+
+    /* a foto da van aparece nos cards das viagens */
+    document.getElementById("fotoVan").closest("div").style.display = fazPassageiros ? "" : "none";
+
+    document.getElementById("campoCapacidadeMotorista").style.display = fazEntregas ? "" : "none";
+    capacidade.required = fazEntregas;
+
+}
+
+
+["servicoPassageiros", "servicoEntregas"].forEach(function(id) {
+    document.getElementById(id).addEventListener("change", vlAtualizarServicosCadastro);
 });
 
 }
@@ -1454,13 +1500,38 @@ document.addEventListener("DOMContentLoaded", async function() {
     .innerText =
         "Olá, " + motorista.nome.split(" ")[0] + "!";
 
+    painelAplicarServicos(motorista);
+
     await painelRecarregar();
 
-    if (window.location.hash === "#reservas") {
-        mostrarAba("reservas");
-    }
+    const abaInicial = window.location.hash.replace("#", "");
+    const abaVisivel = document.querySelector('.painel-nav-item[data-aba="' + abaInicial + '"]:not([hidden])');
+
+    mostrarAba(abaVisivel ? abaInicial : painelAbaPadrao(motorista));
 
 });
+
+
+/* Esconde os menus dos serviços que o motorista não oferece */
+function painelAplicarServicos(motorista) {
+
+    const fazPassageiros = Number(motorista.faz_passageiros) === 1;
+    const fazEntregas = Number(motorista.faz_entregas) === 1;
+
+    ["visaoGeral", "reservas", "planos"].forEach(function(aba) {
+        document.querySelector('.painel-nav-item[data-aba="' + aba + '"]').hidden = !fazPassageiros;
+    });
+
+    document.querySelector('.painel-nav-item[data-aba="entregas"]').hidden = !fazEntregas;
+
+}
+
+
+function painelAbaPadrao(motorista) {
+
+    return Number(motorista.faz_passageiros) === 1 ? "visaoGeral" : "entregas";
+
+}
 
 
 async function painelRecarregar() {
@@ -1505,7 +1576,7 @@ NAVEGAÇÃO ENTRE ABAS
 
 function mostrarAba(aba) {
 
-    const abas = ["visaoGeral", "reservas", "planos"];
+    const abas = ["visaoGeral", "reservas", "planos", "entregas", "servicos"];
 
     abas.forEach(function(item) {
 
@@ -1530,6 +1601,17 @@ function mostrarAba(aba) {
         );
 
     });
+
+    history.replaceState(null, "", "#" + aba);
+
+    /* entregas e serviços ficam em entregas.js */
+    if (aba === "entregas" && typeof painelEntregasAbrir === "function") {
+        painelEntregasAbrir();
+    }
+
+    if (aba === "servicos" && typeof painelServicosPreencher === "function") {
+        painelServicosPreencher();
+    }
 
 }
 

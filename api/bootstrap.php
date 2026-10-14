@@ -290,7 +290,7 @@ function decimal(string $campo, float $min, float $max, string $rotulo = ''): fl
     return round($valor, 2);
 }
 
-function dataFutura(string $campo): string
+function dataFutura(string $campo, string $rotulo = 'da viagem'): string
 {
     $valor = (string) (entrada()[$campo] ?? '');
     $data = DateTime::createFromFormat('!Y-m-d', $valor);
@@ -299,7 +299,7 @@ function dataFutura(string $campo): string
         erro('Informe uma data válida.');
     }
     if ($valor < date('Y-m-d')) {
-        erro('A data da viagem não pode estar no passado.');
+        erro("A data {$rotulo} não pode estar no passado.");
     }
 
     return $valor;
@@ -314,6 +314,37 @@ function horario(string $campo): string
     }
 
     return $valor;
+}
+
+
+/**
+ * Serviços do motorista: transporte de passageiros, entregas
+ * ou ambos. Sem os campos (formulários antigos), mantém o
+ * padrão "só passageiros".
+ * Retorna [faz_passageiros, faz_entregas, capacidade_carga_kg].
+ */
+function lerServicosMotorista(): array
+{
+    $dados = entrada();
+
+    if (!array_key_exists('faz_passageiros', $dados) && !array_key_exists('faz_entregas', $dados)) {
+        return [1, 0, 0];
+    }
+
+    $marcado = fn(string $campo) => in_array($dados[$campo] ?? '0', [true, 1, '1', 'true', 'on'], true) ? 1 : 0;
+
+    $fazPassageiros = $marcado('faz_passageiros');
+    $fazEntregas = $marcado('faz_entregas');
+
+    if (!$fazPassageiros && !$fazEntregas) {
+        erro('Escolha pelo menos um serviço: transporte de passageiros ou entregas.');
+    }
+
+    $capacidade = $fazEntregas
+        ? inteiro('capacidade_carga_kg', 1, 30000, 'capacidade de carga (kg)')
+        : 0;
+
+    return [$fazPassageiros, $fazEntregas, $capacidade];
 }
 
 

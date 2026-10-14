@@ -129,6 +129,11 @@ PAINEL
                 Viagens
             </button>
 
+            <button class="painel-nav-item" data-aba="entregas" onclick="adminAba('entregas')">
+                <i class="fa-solid fa-box"></i>
+                Entregas
+            </button>
+
             <button class="painel-nav-item" data-aba="motoristas" onclick="adminAba('motoristas')">
                 <i class="fa-solid fa-id-card"></i>
                 Motoristas
@@ -294,6 +299,55 @@ PAINEL
 
 
         <!-- =================================================
+        ENTREGAS
+        ================================================= -->
+
+        <section id="adminAbaEntregas" class="painel-aba" style="display:none">
+
+            <div class="painel-card">
+
+                <div class="admin-filtros">
+                    <h2>Entregas</h2>
+                    <input type="search" id="filtroEntregasQ" placeholder="Código, carga, cidade, motorista ou cliente">
+                    <select id="filtroEntregasStatus">
+                        <option value="">Todos os status</option>
+                        <option value="disponivel">Aguardando motorista</option>
+                        <option value="andamento">Em andamento</option>
+                        <option value="entregue">Entregues</option>
+                        <option value="cancelada">Canceladas</option>
+                    </select>
+                    <button type="button" class="btn-novo-plano" id="botaoNovaEntregaAdmin" onclick="adminAbrirFormEntrega()">
+                        <i class="fa-solid fa-plus"></i>
+                        Nova entrega
+                    </button>
+                </div>
+
+                <form id="formEntregaAdmin" class="form-plano-card entrega-form" style="display:none">
+
+                    <h3>Nova solicitação de entrega</h3>
+                    <p class="painel-texto">
+                        Use para cadastrar pedidos de lojas parceiras ou vendedores
+                        (Mercado Livre, Shopee etc.). A entrega fica disponível na hora
+                        para os motoristas com capacidade de carga compatível.
+                    </p>
+
+                    <div id="camposEntregaAdmin"></div>
+
+                    <div class="form-plano-botoes">
+                        <button type="submit" class="btn-salvar-plano">Publicar entrega</button>
+                        <button type="button" class="btn-cancelar-plano" onclick="adminFecharFormEntrega()">Cancelar</button>
+                    </div>
+
+                </form>
+
+                <div id="listaAdminEntregas" class="admin-tabela-wrap"></div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
         MOTORISTAS
         ================================================= -->
 
@@ -416,6 +470,7 @@ NOTIFICAÇÃO
 
 
 <script src="script.js"></script>
+<script src="entregas.js"></script>
 <script src="admin.js"></script>
 
 </body>

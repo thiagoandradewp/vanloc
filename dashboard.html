@@ -85,6 +85,26 @@
 
             </button>
 
+            <button
+                class="painel-nav-item"
+                data-aba="entregas"
+                onclick="mostrarAba('entregas')"
+                hidden
+            >
+                <i class="fa-solid fa-box"></i>
+                Entregas
+                <span id="badgeEntregas" class="badge-contador" style="display:none">0</span>
+            </button>
+
+            <button
+                class="painel-nav-item"
+                data-aba="servicos"
+                onclick="mostrarAba('servicos')"
+            >
+                <i class="fa-solid fa-sliders"></i>
+                Meus serviços
+            </button>
+
         </nav>
 
 
@@ -478,6 +498,135 @@
         </section>
 
 
+
+
+        <!-- =================================================
+        ABA: ENTREGAS
+        ================================================= -->
+
+        <section id="abaEntregas" class="painel-aba" style="display:none">
+
+            <div class="painel-card">
+
+                <div class="planos-cabecalho">
+
+                    <div>
+                        <h2>Entregas</h2>
+                        <p>
+                            Encontre mercadorias para transportar: encomendas
+                            de lojas, vendas do Mercado Livre, Shopee e envios
+                            particulares. Aceite uma entrega e atualize cada
+                            etapa até concluir.
+                        </p>
+                    </div>
+
+                </div>
+
+                <div class="entregas-abas" role="tablist">
+
+                    <button type="button" class="entregas-aba ativo" data-lista="disponiveis" onclick="painelEntregasLista('disponiveis')">
+                        Disponíveis
+                        <span id="contEntregasDisponiveis" class="entregas-contador">0</span>
+                    </button>
+
+                    <button type="button" class="entregas-aba" data-lista="andamento" onclick="painelEntregasLista('andamento')">
+                        Em andamento
+                        <span id="contEntregasAndamento" class="entregas-contador">0</span>
+                    </button>
+
+                    <button type="button" class="entregas-aba" data-lista="historico" onclick="painelEntregasLista('historico')">
+                        Histórico
+                        <span id="contEntregasHistorico" class="entregas-contador">0</span>
+                    </button>
+
+                </div>
+
+                <div id="entregasFiltros" class="admin-filtros">
+
+                    <input type="search" id="filtroEntregasCidade" placeholder="Filtrar por cidade de retirada ou de destino">
+
+                    <span id="entregasCapacidadeInfo" class="entregas-capacidade"></span>
+
+                </div>
+
+                <div id="listaEntregasMotorista" class="entregas-lista">
+                    <!-- preenchido via JS (entregas.js) -->
+                </div>
+
+                <p class="painel-obs">
+
+                    <i class="fa-solid fa-circle-info"></i>
+                    O valor da entrega é pago diretamente pelo solicitante.
+                    A VANLOC não faz cobranças nem pagamentos pelo site.
+
+                </p>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =================================================
+        ABA: MEUS SERVIÇOS
+        ================================================= -->
+
+        <section id="abaServicos" class="painel-aba" style="display:none">
+
+            <div class="painel-card">
+
+                <h2>Meus serviços</h2>
+
+                <p class="painel-texto">
+                    Escolha se você trabalha com transporte de passageiros,
+                    entregas de mercadorias ou ambos. Os menus do painel
+                    mudam conforme a sua escolha.
+                </p>
+
+                <form id="formServicos">
+
+                    <div class="servicos-opcoes">
+
+                        <label class="servico-opcao">
+                            <input type="checkbox" id="servicoPainelPassageiros">
+                            <span>
+                                <i class="fa-solid fa-users"></i>
+                                <strong>Transporte de passageiros</strong>
+                                <small>Publique viagens, receba reservas e crie planos.</small>
+                            </span>
+                        </label>
+
+                        <label class="servico-opcao">
+                            <input type="checkbox" id="servicoPainelEntregas">
+                            <span>
+                                <i class="fa-solid fa-box"></i>
+                                <strong>Entregas de mercadorias</strong>
+                                <small>Veja e aceite entregas compatíveis com o seu veículo.</small>
+                            </span>
+                        </label>
+
+                    </div>
+
+                    <div id="campoCapacidadePainel" style="display:none">
+
+                        <label for="capacidadeCargaPainel">Capacidade de carga do veículo (kg)</label>
+
+                        <input type="number" id="capacidadeCargaPainel" min="1" max="30000" placeholder="Ex: 500">
+
+                        <small class="entregas-ajuda">
+                            Você só verá entregas com peso igual ou menor que essa capacidade.
+                        </small>
+
+                    </div>
+
+                    <button type="submit">Salvar serviços</button>
+
+                </form>
+
+            </div>
+
+        </section>
+
     </main>
 
 
@@ -498,6 +647,7 @@ NOTIFICAÇÃO
 
 
 <script src="script.js"></script>
+<script src="entregas.js"></script>
 
 
 </body>

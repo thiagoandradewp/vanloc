@@ -1,7 +1,11 @@
 # VANLOC
 
 Plataforma para passageiros encontrarem vans, reservarem vagas e consultarem
-planos mensais, e para motoristas publicarem viagens e gerenciarem reservas.
+planos mensais, para motoristas publicarem viagens e gerenciarem reservas, e
+para entregas de mercadorias (lojas, Mercado Livre, Shopee e envios particulares).
+
+O pagamento das viagens e das entregas é feito diretamente ao motorista
+(viagens: na hora da partida). A plataforma não processa pagamentos.
 
 - **Front-end:** HTML, CSS e JavaScript puro (`index.html`, `dashboard.html`, `dashboard-passageiro.html`)
 - **Back-end:** API em PHP 8.1+ (pasta `api/`)
@@ -17,6 +21,8 @@ Funciona na hospedagem compartilhada da Hostinger sem nenhuma instalação extra
 - Reserva com controle de vagas (duas pessoas não conseguem reservar a mesma última vaga)
 - Área do passageiro: perfil, foto, histórico de reservas, cancelamento
 - Depois que o motorista confirma, aparece o botão de WhatsApp do motorista
+- Aviso "PAGAMENTO REALIZADO NA HORA DA PARTIDA PARA VIAGEM" antes de confirmar a reserva
+- Aba **Entregas**: solicitar o envio de uma mercadoria e acompanhar cada etapa
 
 **Motorista**
 - Cadastro com senha, dados da van, foto e primeira viagem
@@ -24,11 +30,17 @@ Funciona na hospedagem compartilhada da Hostinger sem nenhuma instalação extra
 - Publicar novas viagens e cancelar viagens (as reservas ativas são recusadas automaticamente)
 - Confirmar ou recusar reservas e falar com o passageiro pelo WhatsApp
 - Até 3 planos mensais (mínimo de R$ 20,00 por viagem)
+- **Meus serviços**: transporte de passageiros, entregas ou ambos (com a capacidade de carga em kg);
+  os menus do painel aparecem conforme os serviços escolhidos
+- **Entregas**: lista de entregas disponíveis compatíveis com a capacidade de carga (com filtro por cidade),
+  aceite, etapas *Aguardando retirada → Mercadoria coletada → Em trânsito → Entregue* e histórico.
+  Contatos e endereço exato do destino só aparecem depois de aceitar.
 
 **Administração** (`/admin`)
 - Visão geral: passageiros, motoristas, viagens ativas, receita confirmada, reservas por status e rotas mais procuradas
 - Reservas: busca, filtro por status, confirmar / recusar / cancelar
 - Viagens: busca, filtro (ativas, encerradas, canceladas) e cancelamento
+- Entregas: busca, filtro por status, cadastro de entregas de lojas parceiras e cancelamento
 - Motoristas e passageiros: busca, bloquear / desbloquear e excluir conta
 - Administradores: adicionar e remover administradores e trocar a própria senha
 
@@ -72,10 +84,16 @@ Funciona na hospedagem compartilhada da Hostinger sem nenhuma instalação extra
 
 Pronto: acesse o domínio, cadastre um motorista e um passageiro e faça uma reserva de teste.
 
-### Já tinha importado o banco antes do painel administrativo?
+### Atualizando um banco já existente
 
-Importe também `sql/atualizacao-001-admin.sql` no phpMyAdmin (uma única vez).
-Ele adiciona a tabela de administradores e a opção de bloquear contas.
+Importe no phpMyAdmin, **uma única vez cada e nesta ordem**, só as atualizações
+que o seu banco ainda não recebeu:
+
+1. `sql/atualizacao-001-admin.sql`: tabela de administradores e bloqueio de contas
+2. `sql/atualizacao-002-entregas.sql`: serviços do motorista e tabela de entregas
+
+Nenhuma delas apaga dados. Depois da 002, os motoristas já cadastrados continuam
+como "transporte de passageiros" e podem ativar as entregas em *Meus serviços*.
 
 ## Estrutura
 
@@ -85,6 +103,7 @@ dashboard.html              Painel do Motorista
 dashboard-passageiro.html   Área do Passageiro
 admin.html                  Painel administrativo
 admin.js                    lógica do painel administrativo
+entregas.js                 entregas: componentes compartilhados + abas Entregas / Meus serviços do motorista
 script.js                   lógica do site + painel do motorista + cliente da API
 dashboard-passageiro.js     lógica da área do passageiro
 style.css                   estilos
@@ -97,10 +116,14 @@ api/
   reservas.php              reservas de passageiros e gestão pelo motorista
   perfil.php                perfil e foto do passageiro
   admin.php                 painel administrativo
+  entregas.php              entregas (motorista e cliente)
+  entregas-comum.php        regras das entregas usadas pela API e pelo admin (não acessível pela web)
+  motorista.php             serviços oferecidos pelo motorista
 sql/
   schema.sql                estrutura do banco
   demo.sql                  dados de exemplo (opcional)
   atualizacao-001-admin.sql atualização para bancos criados antes do painel admin
+  atualizacao-002-entregas.sql atualização para bancos criados antes das entregas
 uploads/                    fotos enviadas (scripts bloqueados por .htaccess)
 ```
 
@@ -114,6 +137,7 @@ uploads/                    fotos enviadas (scripts bloqueados por .htaccess)
 - Uploads: só JPG/PNG/WEBP de até 3 MB, conferidos pelo conteúdo real do arquivo e salvos com nome aleatório; a pasta não executa PHP
 - `api/config.php`, `api/bootstrap.php` e `sql/` não podem ser acessados pelo navegador
 - O primeiro administrador só pode ser criado com a chave de instalação do `config.php`; contas bloqueadas perdem o acesso imediatamente
+- Cada motorista só vê e altera as entregas que aceitou; o aceite é atômico (duas pessoas não aceitam a mesma entrega)
 - Telefone do motorista só é exibido ao passageiro depois da confirmação da reserva
 
 ## Desenvolvimento local
@@ -135,7 +159,8 @@ Acesse http://localhost:8080.
 
 ## Próximos passos sugeridos
 
+- Avisos automáticos (email/WhatsApp) quando surgir uma entrega compatível ou mudar o status;
+  hoje o motorista e o cliente acompanham tudo pelo painel
 - Recuperação de senha por email (SMTP da Hostinger)
 - Notificações por email/WhatsApp quando uma reserva for feita ou confirmada
-- Assinatura dos planos mensais com pagamento online (Pix / Mercado Pago)
 - Edição de viagens já publicadas
