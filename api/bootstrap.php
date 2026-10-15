@@ -26,15 +26,23 @@ if (!is_file(__DIR__ . '/config.php')) {
 
 $VL_CONFIG = require __DIR__ . '/config.php';
 
+require __DIR__ . '/migracoes.php';
+
 date_default_timezone_set($VL_CONFIG['timezone'] ?? 'America/Recife');
 
 set_exception_handler(function (Throwable $e) use ($VL_CONFIG) {
     error_log('[VANLOC] ' . $e);
     http_response_code(500);
+
+    /* tabela ou coluna inexistente = banco desatualizado */
+    $bancoDesatualizado = $e instanceof PDOException && in_array($e->getCode(), ['42S02', '42S22'], true);
+
     echo json_encode([
         'erro' => !empty($VL_CONFIG['debug'])
             ? $e->getMessage()
-            : 'Erro interno. Tente novamente em instantes.'
+            : ($bancoDesatualizado
+                ? 'O banco de dados do site está desatualizado. Avise o administrador.'
+                : 'Erro interno. Tente novamente em instantes.')
     ], JSON_UNESCAPED_UNICODE);
 });
 
@@ -61,6 +69,9 @@ function db(): PDO
             PDO::ATTR_EMULATE_PREPARES => false,
         ]);
         $pdo->exec("SET time_zone = '" . date('P') . "'");
+
+        /* cria tabelas/colunas de versões novas, se ainda não existirem */
+        vlVerificarBanco($pdo);
     }
 
     return $pdo;

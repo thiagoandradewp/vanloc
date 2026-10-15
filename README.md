@@ -95,8 +95,13 @@ Pronto: acesse o domínio, cadastre um motorista e um passageiro e faça uma res
 
 ### Atualizando um banco já existente
 
-Importe no phpMyAdmin, **uma única vez cada e nesta ordem**, só as atualizações
-que o seu banco ainda não recebeu:
+**O banco é atualizado automaticamente.** Depois de enviar os arquivos novos
+(incluindo a pasta `sql/`), a primeira visita ao site cria as tabelas e colunas
+que faltam, sem apagar nem alterar dados (`api/migracoes.php`). Não é preciso
+importar nada no phpMyAdmin. A versão aplicada fica na tabela `vanloc_versao`.
+
+Se preferir fazer à mão, importe no phpMyAdmin, **uma única vez cada e nesta ordem**,
+só as atualizações que o seu banco ainda não recebeu:
 
 1. `sql/atualizacao-001-admin.sql`: tabela de administradores e bloqueio de contas
 2. `sql/atualizacao-002-entregas.sql`: serviços do motorista e tabela de entregas
@@ -130,6 +135,7 @@ api/
   admin.php                 painel administrativo
   entregas.php              entregas (motorista e cliente)
   entregas-comum.php        regras das entregas usadas pela API e pelo admin (não acessível pela web)
+  migracoes.php             atualização automática do banco (não acessível pela web)
   motorista.php             serviços oferecidos pelo motorista
 sql/
   schema.sql                estrutura do banco

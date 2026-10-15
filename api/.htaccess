@@ -1,4 +1,4 @@
 # Só os endpoints podem ser acessados diretamente
-<FilesMatch "^(bootstrap|config|config\.example|entregas-comum)\.php$">
+<FilesMatch "^(bootstrap|config|config\.example|entregas-comum|migracoes)\.php$">
     Require all denied
 </FilesMatch>
