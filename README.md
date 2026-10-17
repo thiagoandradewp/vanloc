@@ -111,6 +111,14 @@ só as atualizações que o seu banco ainda não recebeu:
 Nenhuma delas apaga dados. Depois da 002, os motoristas já cadastrados continuam
 como "transporte de passageiros" e podem ativar as entregas em *Meus serviços*.
 
+### Cache dos navegadores
+
+O `.htaccess` manda os navegadores guardarem CSS e JavaScript por uma semana.
+Por isso as páginas carregam esses arquivos com um número de versão
+(`style.css?v=20261017`, `script.js?v=20261017`...). **Sempre que alterar um
+`.css` ou `.js`, troque esse número em todos os `.html`** (ex: pela data do dia),
+senão quem já visitou o site continua vendo a versão antiga.
+
 ## Estrutura
 
 ```
