@@ -143,6 +143,8 @@ sql/
   atualizacao-001-admin.sql atualização para bancos criados antes do painel admin
   atualizacao-002-entregas.sql atualização para bancos criados antes das entregas
   atualizacao-003-envios.sql   atualização para bancos criados antes da Área de Envios
+img/                        logotipos (completo, horizontal, versões para fundo escuro, símbolo
+                            e imagem de compartilhamento); favicons ficam na raiz
 uploads/                    fotos enviadas (scripts bloqueados por .htaccess)
 ```
 

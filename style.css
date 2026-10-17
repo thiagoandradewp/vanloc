@@ -5132,3 +5132,77 @@ a.btn-motorista {
         padding: 18px;
     }
 }
+
+
+/* =====================================================
+LOGOTIPO (imagens em img/)
+===================================================== */
+
+.logo picture,
+.painel-logo picture,
+.dp-logo picture,
+.modal-logo picture,
+.admin-acesso-logo picture {
+    display: block;
+    line-height: 0;
+}
+
+/* versão horizontal: símbolo + VANLOC TRANSPORTES */
+.logo-marca {
+    display: block;
+    height: 46px;
+    width: auto;
+}
+
+/* barras laterais escuras dos painéis */
+.painel-logo,
+.dp-logo {
+    display: block;
+    text-decoration: none;
+}
+
+.logo-marca-painel {
+    height: auto;
+    width: 100%;
+    max-width: 200px;
+}
+
+/* logotipo completo (rodapé, login, tela de acesso do admin) */
+.logo-completo {
+    display: block;
+    height: auto;
+    width: 100%;
+}
+
+footer .logo .logo-completo {
+    max-width: 200px;
+}
+
+.modal-logo .logo-completo {
+    max-width: 170px;
+    margin: 0 auto 6px;
+}
+
+.admin-acesso-logo .logo-completo {
+    max-width: 190px;
+    margin: 0 auto 18px;
+}
+
+@media (max-width: 900px) {
+    .painel-sidebar .logo-marca-painel,
+    .dp-sidebar .logo-marca-painel {
+        max-width: 160px;
+    }
+}
+
+@media (max-width: 700px) {
+    .logo-marca {
+        height: 38px;
+    }
+}
+
+@media (max-width: 380px) {
+    .logo-marca {
+        height: 32px;
+    }
+}
