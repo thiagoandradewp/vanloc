@@ -55,7 +55,7 @@ header {
 
     font-weight: 800;
 
-    color: #172554;
+    color: #00142d;
 
     display: flex;
 
@@ -68,21 +68,21 @@ header {
 
 .logo i {
 
-    color: #2563eb;
+    color: #065eb8;
 
 }
 
 
 .logo span {
 
-    color: #2563eb;
+    color: #065eb8;
 
 }
 
 
 .logo .destaque {
 
-    color: #172554;
+    color: #00142d;
 
 }
 
@@ -113,7 +113,7 @@ nav a {
 
 nav a:hover {
 
-    color: #2563eb;
+    color: #065eb8;
 
 }
 
@@ -131,7 +131,7 @@ button {
 
 .btn-login {
 
-    background: #172554;
+    background: #00142d;
 
     color: white;
 
@@ -144,9 +144,9 @@ button {
 
 .btn-motorista {
 
-    background: #eff6ff;
+    background: #eef5fc;
 
-    color: #2563eb;
+    color: #065eb8;
 
     padding: 11px 16px;
 
@@ -175,7 +175,7 @@ HERO
 
     background: linear-gradient(
         135deg,
-        #eff6ff,
+        #eef5fc,
         #ffffff
     );
 
@@ -184,9 +184,9 @@ HERO
 
 .tag {
 
-    background: #dbeafe;
+    background: #d9e8f7;
 
-    color: #2563eb;
+    color: #065eb8;
 
     padding: 8px 14px;
 
@@ -213,14 +213,14 @@ HERO
 
     margin-bottom: 20px;
 
-    color: #172554;
+    color: #00142d;
 
 }
 
 
 .hero h1 span {
 
-    color: #2563eb;
+    color: #065eb8;
 
 }
 
@@ -251,7 +251,7 @@ HERO
 
 .btn-principal {
 
-    background: #2563eb;
+    background: #065eb8;
 
     color: white;
 
@@ -270,7 +270,7 @@ HERO
 
     background: white;
 
-    color: #172554;
+    color: #00142d;
 
     padding: 15px 20px;
 
@@ -285,7 +285,7 @@ HERO
 
 .hero-card {
 
-    background: #172554;
+    background: #00142d;
 
     padding: 35px;
 
@@ -295,7 +295,7 @@ HERO
 
     text-align: center;
 
-    box-shadow: 0 25px 50px rgba(37,99,235,0.2);
+    box-shadow: 0 25px 50px rgba(6, 94, 184,0.2);
 
 }
 
@@ -392,8 +392,8 @@ HERO
 
     background: radial-gradient(
         closest-side,
-        rgba(96,165,250,0.42),
-        rgba(96,165,250,0) 72%
+        rgba(78, 148, 219,0.42),
+        rgba(78, 148, 219,0) 72%
     );
 
     pointer-events: none;
@@ -461,7 +461,7 @@ HERO
 
     filter:
         drop-shadow(0 16px 14px rgba(0,0,0,0.45))
-        drop-shadow(0 0 22px rgba(96,165,250,0.22));
+        drop-shadow(0 0 22px rgba(78, 148, 219,0.22));
 
 }
 
@@ -618,14 +618,14 @@ input {
 
 input:focus {
 
-    border-color: #2563eb;
+    border-color: #065eb8;
 
 }
 
 
 .form-busca button {
 
-    background: #2563eb;
+    background: #065eb8;
 
     color: white;
 
@@ -659,7 +659,7 @@ SEÇÕES
 
 .titulo-secao span {
 
-    color: #2563eb;
+    color: #065eb8;
 
     font-weight: 700;
 
@@ -672,7 +672,7 @@ SEÇÕES
 
     font-size: 36px;
 
-    color: #172554;
+    color: #00142d;
 
     margin: 10px 0;
 
@@ -794,9 +794,9 @@ VIAGENS
 
     border-radius: 50%;
 
-    background: #dbeafe;
+    background: #d9e8f7;
 
-    color: #2563eb;
+    color: #065eb8;
 
     display: flex;
 
@@ -836,7 +836,7 @@ VIAGENS
 
 .viagem-info h3 {
 
-    color: #172554;
+    color: #00142d;
 
     margin-bottom: 18px;
 
@@ -847,7 +847,7 @@ VIAGENS
 
 .viagem-info h3 i {
 
-    color: #2563eb;
+    color: #065eb8;
 
     margin: 0 7px;
 
@@ -871,7 +871,7 @@ VIAGENS
 
 .detalhes i {
 
-    color: #2563eb;
+    color: #065eb8;
 
 }
 
@@ -913,7 +913,7 @@ VIAGENS
 
 .preco strong {
 
-    color: #2563eb;
+    color: #065eb8;
 
     font-size: 19px;
 
@@ -946,11 +946,11 @@ VIAGENS
 
 .btn-planos {
 
-    background: #eff6ff;
+    background: #eef5fc;
 
-    color: #2563eb;
+    color: #065eb8;
 
-    border: 1px solid #bfdbfe;
+    border: 1px solid #b5d2ef;
 
     padding: 9px 8px;
 
@@ -965,14 +965,14 @@ VIAGENS
 
 .btn-planos:hover {
 
-    background: #dbeafe;
+    background: #d9e8f7;
 
 }
 
 
 .btn-reservar {
 
-    background: #2563eb;
+    background: #065eb8;
 
     color: white;
 
@@ -995,7 +995,7 @@ PASSAGEIRO
 
     padding: 100px 10%;
 
-    background: #eff6ff;
+    background: #eef5fc;
 
     display: grid;
 
@@ -1010,7 +1010,7 @@ PASSAGEIRO
 
 .passageiro-info > span {
 
-    color: #2563eb;
+    color: #065eb8;
 
     font-size: 13px;
 
@@ -1023,7 +1023,7 @@ PASSAGEIRO
 
     font-size: 42px;
 
-    color: #172554;
+    color: #00142d;
 
     margin: 15px 0 20px;
 
@@ -1075,7 +1075,7 @@ PASSAGEIRO
 
     background: white;
 
-    color: #2563eb;
+    color: #065eb8;
 
     border-radius: 12px;
 
@@ -1094,7 +1094,7 @@ PASSAGEIRO
 
 .beneficios-passageiro strong {
 
-    color: #172554;
+    color: #00142d;
 
     display: block;
 
@@ -1120,7 +1120,7 @@ PASSAGEIRO
 
     border-radius: 20px;
 
-    box-shadow: 0 20px 50px rgba(37,99,235,0.12);
+    box-shadow: 0 20px 50px rgba(6, 94, 184,0.12);
 
 }
 
@@ -1131,7 +1131,7 @@ PASSAGEIRO
 
     height: 60px;
 
-    background: #2563eb;
+    background: #065eb8;
 
     color: white;
 
@@ -1152,7 +1152,7 @@ PASSAGEIRO
 
 .card-cadastro-passageiro h2 {
 
-    color: #172554;
+    color: #00142d;
 
     margin-bottom: 8px;
 
@@ -1241,7 +1241,7 @@ PASSAGEIRO
 
     padding: 15px;
 
-    background: #2563eb;
+    background: #065eb8;
 
     color: white;
 
@@ -1267,7 +1267,7 @@ PASSAGEIRO
 
 .login-passageiro a {
 
-    color: #2563eb;
+    color: #065eb8;
 
     font-weight: 600;
 
@@ -1313,7 +1313,7 @@ COMO FUNCIONA
 
     height: 28px;
 
-    background: #2563eb;
+    background: #065eb8;
 
     color: white;
 
@@ -1336,7 +1336,7 @@ COMO FUNCIONA
 
     font-size: 45px;
 
-    color: #2563eb;
+    color: #065eb8;
 
     margin: 20px 0;
 
@@ -1382,7 +1382,7 @@ VANTAGENS
 
 .vantagens-texto span {
 
-    color: #2563eb;
+    color: #065eb8;
 
     font-size: 13px;
 
@@ -1397,7 +1397,7 @@ VANTAGENS
 
     margin: 15px 0;
 
-    color: #172554;
+    color: #00142d;
 
 }
 
@@ -1442,8 +1442,8 @@ VANTAGENS
 
     background: linear-gradient(
         135deg,
-        #2563eb,
-        #172554
+        #065eb8,
+        #00142d
     );
 
     color: white;
@@ -1477,7 +1477,7 @@ VANTAGENS
 
 .vantagens-card p {
 
-    color: #dbeafe;
+    color: #d9e8f7;
 
     line-height: 1.6;
 
@@ -1496,7 +1496,7 @@ MOTORISTA
 
     border-radius: 20px;
 
-    background: #172554;
+    background: #00142d;
 
     color: white;
 
@@ -1511,7 +1511,7 @@ MOTORISTA
 
 .motorista-banner span {
 
-    color: #60a5fa;
+    color: #4e94db;
 
     font-weight: 700;
 
@@ -1538,7 +1538,7 @@ MOTORISTA
 
 .motorista-banner button {
 
-    background: #2563eb;
+    background: #065eb8;
 
     color: white;
 
@@ -1557,7 +1557,7 @@ FOOTER
 
 footer {
 
-    background: #0f172a;
+    background: #000c1d;
 
     color: white;
 
@@ -1607,7 +1607,7 @@ footer p {
 
 .copyright {
 
-    background: #020617;
+    background: #000814;
 
     color: #64748b;
 
@@ -1628,9 +1628,9 @@ footer p {
 
     align-items: flex-start;
 
-    background: #eff6ff;
+    background: #eef5fc;
 
-    border: 1px solid #bfdbfe;
+    border: 1px solid #b5d2ef;
 
     border-radius: 10px;
 
@@ -1643,7 +1643,7 @@ footer p {
 
 .aviso-painel-motorista i {
 
-    color: #2563eb;
+    color: #065eb8;
 
     font-size: 18px;
 
@@ -1656,7 +1656,7 @@ footer p {
 
     font-size: 13px;
 
-    color: #1d3a66;
+    color: #0b2a4f;
 
     line-height: 1.5;
 
@@ -1677,7 +1677,7 @@ MODAIS
 
     inset: 0;
 
-    background: rgba(15,23,42,0.75);
+    background: rgba(0, 20, 45,0.75);
 
     padding: 30px;
 
@@ -1742,14 +1742,14 @@ MODAIS
 
     font-size: 40px;
 
-    color: #2563eb;
+    color: #065eb8;
 
 }
 
 
 .modal h2 {
 
-    color: #172554;
+    color: #00142d;
 
     margin-bottom: 8px;
 
@@ -1793,7 +1793,7 @@ form button[type="submit"] {
 
     padding: 14px;
 
-    background: #2563eb;
+    background: #065eb8;
 
     color: white;
 
@@ -1819,7 +1819,7 @@ form button[type="submit"] {
 
 .criar-conta a {
 
-    color: #2563eb;
+    color: #065eb8;
 
     font-weight: 600;
 
@@ -1843,14 +1843,14 @@ form button[type="submit"] {
 
     margin-bottom: 5px;
 
-    color: #172554;
+    color: #00142d;
 
 }
 
 
 #formMotorista h3 i {
 
-    color: #2563eb;
+    color: #065eb8;
 
     margin-right: 5px;
 
@@ -1897,7 +1897,7 @@ PLANOS
 
 .cabecalho-planos span {
 
-    color: #2563eb;
+    color: #065eb8;
 
     font-size: 12px;
 
@@ -1912,7 +1912,7 @@ PLANOS
 
     margin: 12px 0;
 
-    color: #172554;
+    color: #00142d;
 
 }
 
@@ -1963,7 +1963,7 @@ PLANOS
 
 .plano-destaque {
 
-    border: 2px solid #2563eb;
+    border: 2px solid #065eb8;
 
 }
 
@@ -1978,7 +1978,7 @@ PLANOS
 
     transform: translateX(-50%);
 
-    background: #2563eb;
+    background: #065eb8;
 
     color: white;
 
@@ -2016,9 +2016,9 @@ PLANOS
 
     align-items: center;
 
-    background: #eff6ff;
+    background: #eef5fc;
 
-    color: #2563eb;
+    color: #065eb8;
 
     border-radius: 10px;
 
@@ -2027,7 +2027,7 @@ PLANOS
 
 .plano-titulo h3 {
 
-    color: #172554;
+    color: #00142d;
 
 }
 
@@ -2065,7 +2065,7 @@ PLANOS
 
     font-size: 32px;
 
-    color: #2563eb;
+    color: #065eb8;
 
 }
 
@@ -2114,7 +2114,7 @@ PLANOS
 
     padding: 13px;
 
-    background: #2563eb;
+    background: #065eb8;
 
     color: white;
 
@@ -2131,7 +2131,7 @@ PLANOS
 
     padding: 18px;
 
-    background: #eff6ff;
+    background: #eef5fc;
 
     color: #475467;
 
@@ -2146,7 +2146,7 @@ PLANOS
 
 .info-planos i {
 
-    color: #2563eb;
+    color: #065eb8;
 
     margin-right: 6px;
 
@@ -2155,7 +2155,7 @@ PLANOS
 
 .info-planos strong {
 
-    color: #172554;
+    color: #00142d;
 
 }
 
@@ -2185,7 +2185,7 @@ PLANOS
 
     font-size: 28px;
 
-    color: #2563eb;
+    color: #065eb8;
 
 }
 
@@ -2202,7 +2202,7 @@ NOTIFICAÇÃO
 
     bottom: 25px;
 
-    background: #172554;
+    background: #00142d;
 
     color: white;
 
@@ -2472,7 +2472,7 @@ SIDEBAR
 
     flex-shrink: 0;
 
-    background: #172554;
+    background: #00142d;
 
     color: white;
 
@@ -2503,7 +2503,7 @@ SIDEBAR
 
     gap: 8px;
 
-    color: #60a5fa;
+    color: #4e94db;
 
 }
 
@@ -2519,7 +2519,7 @@ SIDEBAR
 
     font-size: 12px;
 
-    color: #93c5fd;
+    color: #8ab8e6;
 
     margin: 6px 0 35px;
 
@@ -2584,7 +2584,7 @@ SIDEBAR
 
 .painel-nav-item.ativo {
 
-    background: #2563eb;
+    background: #065eb8;
 
     color: white;
 
@@ -2665,7 +2665,7 @@ CONTEÚDO
 
 .painel-topo h1 {
 
-    color: #172554;
+    color: #00142d;
 
     font-size: 26px;
 
@@ -2728,9 +2728,9 @@ CARTÕES DE ESTATÍSTICA
 
     border-radius: 12px;
 
-    background: #eff6ff;
+    background: #eef5fc;
 
-    color: #2563eb;
+    color: #065eb8;
 
     display: flex;
 
@@ -2751,7 +2751,7 @@ CARTÕES DE ESTATÍSTICA
 
     font-size: 20px;
 
-    color: #172554;
+    color: #00142d;
 
 }
 
@@ -2787,7 +2787,7 @@ CARTÃO GENÉRICO DO PAINEL
 
     font-size: 17px;
 
-    color: #172554;
+    color: #00142d;
 
     margin-bottom: 16px;
 
@@ -2807,7 +2807,7 @@ CARTÃO GENÉRICO DO PAINEL
 
 .painel-obs i {
 
-    color: #2563eb;
+    color: #065eb8;
 
     margin-right: 6px;
 
@@ -2851,7 +2851,7 @@ TABELA DE VIAGENS
 
 .linha-viagem strong {
 
-    color: #172554;
+    color: #00142d;
 
 }
 
@@ -2898,7 +2898,7 @@ ABA DE PLANOS
 
 .planos-cabecalho h2 {
 
-    color: #172554;
+    color: #00142d;
 
     margin-bottom: 6px;
 
@@ -2920,7 +2920,7 @@ ABA DE PLANOS
 
 .btn-novo-plano {
 
-    background: #2563eb;
+    background: #065eb8;
 
     color: white;
 
@@ -2994,9 +2994,9 @@ ABA DE PLANOS
 
     font-weight: 700;
 
-    color: #2563eb;
+    color: #065eb8;
 
-    background: #eff6ff;
+    background: #eef5fc;
 
     padding: 4px 10px;
 
@@ -3007,7 +3007,7 @@ ABA DE PLANOS
 
 .plano-card-painel h3 {
 
-    color: #172554;
+    color: #00142d;
 
     font-size: 16px;
 
@@ -3020,7 +3020,7 @@ ABA DE PLANOS
 
     font-weight: 800;
 
-    color: #172554;
+    color: #00142d;
 
 }
 
@@ -3055,7 +3055,7 @@ ABA DE PLANOS
 
 .plano-card-painel ul li i {
 
-    color: #2563eb;
+    color: #065eb8;
 
     margin-right: 6px;
 
@@ -3092,9 +3092,9 @@ ABA DE PLANOS
 
 .plano-card-painel .btn-editar-plano {
 
-    background: #eff6ff;
+    background: #eef5fc;
 
-    color: #2563eb;
+    color: #065eb8;
 
 }
 
@@ -3145,7 +3145,7 @@ FORMULÁRIO DE PLANO
 
 .form-plano-card h3 {
 
-    color: #172554;
+    color: #00142d;
 
     margin-bottom: 8px;
 
@@ -3201,7 +3201,7 @@ FORMULÁRIO DE PLANO
 
 .vantagens-input button {
 
-    background: #172554;
+    background: #00142d;
 
     color: white;
 
@@ -3280,7 +3280,7 @@ FORMULÁRIO DE PLANO
 
     flex: 1;
 
-    background: #2563eb;
+    background: #065eb8;
 
     color: white;
 
@@ -3404,7 +3404,7 @@ MELHORIAS V2
 ===================================================== */
 
 :focus-visible {
-    outline: 3px solid #93c5fd;
+    outline: 3px solid #8ab8e6;
     outline-offset: 2px;
     border-radius: 6px;
 }
@@ -3412,8 +3412,8 @@ MELHORIAS V2
 input:focus,
 select:focus,
 textarea:focus {
-    border-color: #2563eb;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.18);
+    border-color: #065eb8;
+    box-shadow: 0 0 0 3px rgba(6, 94, 184, 0.18);
     outline: none;
 }
 
@@ -3455,7 +3455,7 @@ body.modal-aberto {
     border: 1px solid #dbe3ef;
     border-radius: 10px;
     background: white;
-    color: #172554;
+    color: #00142d;
     font-size: 18px;
     cursor: pointer;
     align-items: center;
@@ -3562,8 +3562,8 @@ CONTA DO PASSAGEIRO NO HEADER
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: #dbeafe;
-    color: #1d4ed8;
+    background: #d9e8f7;
+    color: #054f9c;
     font-weight: 800;
     font-size: 13px;
 }
@@ -3578,7 +3578,7 @@ DASHBOARD DO PASSAGEIRO
 
 .dashboard-passageiro {
     background: #f5f8fc;
-    color: #172554;
+    color: #00142d;
 }
 
 .dp-shell {
@@ -3588,7 +3588,7 @@ DASHBOARD DO PASSAGEIRO
 
 .dp-sidebar {
     width: 250px;
-    background: #172554;
+    background: #00142d;
     color: white;
     padding: 28px 18px;
     display: flex;
@@ -3605,11 +3605,11 @@ DASHBOARD DO PASSAGEIRO
     display: flex;
     align-items: center;
     gap: 9px;
-    color: #60a5fa;
+    color: #4e94db;
 }
 
 .dp-logo span { color: white; }
-.dp-caption { color: #93c5fd; font-size: 12px; margin: 6px 0 28px; }
+.dp-caption { color: #8ab8e6; font-size: 12px; margin: 6px 0 28px; }
 .dp-nav { display: flex; flex-direction: column; gap: 6px; flex: 1; }
 .dp-nav button, .dp-side-link {
     border: 0;
@@ -3627,7 +3627,7 @@ DASHBOARD DO PASSAGEIRO
     text-align: left;
     font-size: 14px;
 }
-.dp-nav button:hover, .dp-nav button.ativo { background: #2563eb; color: white; }
+.dp-nav button:hover, .dp-nav button.ativo { background: #065eb8; color: white; }
 .dp-side-footer { display: grid; gap: 7px; }
 .dp-side-footer button, .dp-side-footer a { color: #cbd5e1; background: transparent; border: 0; padding: 10px 13px; text-align: left; text-decoration: none; cursor: pointer; border-radius: 10px; }
 .dp-side-footer button:hover, .dp-side-footer a:hover { background: rgba(255,255,255,.06); color: white; }
@@ -3644,33 +3644,33 @@ DASHBOARD DO PASSAGEIRO
 }
 .dp-user-mini { display: flex; align-items: center; gap: 12px; }
 .dp-user-mini img, .dp-user-mini .dp-avatar { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; }
-.dp-avatar { display: flex; align-items: center; justify-content: center; background: #dbeafe; color: #2563eb; font-weight: 800; }
+.dp-avatar { display: flex; align-items: center; justify-content: center; background: #d9e8f7; color: #065eb8; font-weight: 800; }
 .dp-content { padding: 34px; max-width: 1250px; margin: 0 auto; }
-.dp-content h1 { margin: 0 0 7px; font-size: 30px; color: #172554; }
+.dp-content h1 { margin: 0 0 7px; font-size: 30px; color: #00142d; }
 .dp-subtitle { color: #667085; margin: 0 0 26px; }
 .dp-aba { display: none; }
 .dp-aba.ativa { display: block; }
 .dp-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 25px; }
-.dp-stat, .dp-card { background: white; border: 1px solid #e5e7eb; border-radius: 16px; box-shadow: 0 8px 24px rgba(15,23,42,.05); }
+.dp-stat, .dp-card { background: white; border: 1px solid #e5e7eb; border-radius: 16px; box-shadow: 0 8px 24px rgba(0, 20, 45,.05); }
 .dp-stat { padding: 20px; display: flex; align-items: center; gap: 15px; }
-.dp-stat i { width: 46px; height: 46px; border-radius: 12px; background: #eff6ff; color: #2563eb; display: flex; align-items: center; justify-content: center; font-size: 20px; }
-.dp-stat strong { display: block; font-size: 22px; color: #172554; }
+.dp-stat i { width: 46px; height: 46px; border-radius: 12px; background: #eef5fc; color: #065eb8; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+.dp-stat strong { display: block; font-size: 22px; color: #00142d; }
 .dp-stat span { display: block; color: #667085; font-size: 13px; margin-top: 3px; }
 .dp-card { padding: 24px; margin-bottom: 18px; }
 .dp-card h2 { margin: 0 0 18px; font-size: 19px; }
 .dp-profile-grid { display: grid; grid-template-columns: 180px 1fr; gap: 28px; align-items: start; }
 .dp-photo-box { text-align: center; }
-.dp-photo-preview { width: 140px; height: 140px; border-radius: 50%; object-fit: cover; background: #eff6ff; border: 4px solid #dbeafe; display: flex; align-items: center; justify-content: center; margin: 0 auto 13px; color: #2563eb; font-size: 45px; font-weight: 800; overflow: hidden; }
+.dp-photo-preview { width: 140px; height: 140px; border-radius: 50%; object-fit: cover; background: #eef5fc; border: 4px solid #d9e8f7; display: flex; align-items: center; justify-content: center; margin: 0 auto 13px; color: #065eb8; font-size: 45px; font-weight: 800; overflow: hidden; }
 .dp-photo-preview img { width: 100%; height: 100%; object-fit: cover; }
-.dp-photo-label { display: inline-flex; gap: 7px; align-items: center; cursor: pointer; padding: 9px 13px; border-radius: 9px; background: #eff6ff; color: #2563eb; font-weight: 700; font-size: 13px; }
+.dp-photo-label { display: inline-flex; gap: 7px; align-items: center; cursor: pointer; padding: 9px 13px; border-radius: 9px; background: #eef5fc; color: #065eb8; font-weight: 700; font-size: 13px; }
 .dp-photo-label input { display: none; }
 .dp-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
 .dp-field.full { grid-column: 1 / -1; }
 .dp-field label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 7px; color: #344054; }
 .dp-field input, .dp-field textarea { width: 100%; box-sizing: border-box; border: 1px solid #d0d5dd; border-radius: 10px; padding: 11px 12px; font: inherit; outline: none; background: white; }
 .dp-field textarea { min-height: 95px; resize: vertical; }
-.dp-field input:focus, .dp-field textarea:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,.10); }
-.dp-btn { border: 0; border-radius: 10px; padding: 12px 17px; background: #2563eb; color: white; font-weight: 700; cursor: pointer; }
+.dp-field input:focus, .dp-field textarea:focus { border-color: #065eb8; box-shadow: 0 0 0 3px rgba(6, 94, 184,.10); }
+.dp-btn { border: 0; border-radius: 10px; padding: 12px 17px; background: #065eb8; color: white; font-weight: 700; cursor: pointer; }
 .dp-btn.secondary { background: #eef2f7; color: #344054; }
 .dp-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
 .dp-empty { padding: 35px; text-align: center; color: #667085; border: 1px dashed #cbd5e1; border-radius: 14px; background: #f8fafc; }
@@ -3687,7 +3687,7 @@ DASHBOARD DO PASSAGEIRO
 .dp-trip-details > div { min-width: 0; padding: 12px; border-radius: 10px; background: #f8fafc; }
 .dp-trip-details span, .dp-trip-details strong { display: block; }
 .dp-trip-details span { color: #667085; font-size: 12px; margin-bottom: 5px; }
-.dp-trip-details strong { color: #172554; font-size: 14px; overflow-wrap: anywhere; }
+.dp-trip-details strong { color: #00142d; font-size: 14px; overflow-wrap: anywhere; }
 .dp-trip .dp-trip-created { margin: 15px 0 0; padding-top: 12px; border-top: 1px solid #eef2f6; font-size: 12px; }
 .dp-mobile-menu { display: none; }
 
@@ -3732,7 +3732,7 @@ MELHORIAS: HERO RESPONSIVO E IMAGENS
 .imagem-van img.img-fallback {
     object-fit: contain;
     padding: 18px;
-    background: linear-gradient(135deg, #eff6ff, #dbeafe);
+    background: linear-gradient(135deg, #eef5fc, #d9e8f7);
 }
 
 @media (max-width: 700px) {
@@ -3825,13 +3825,13 @@ VERSÃO COM BANCO DE DADOS (API)
 }
 
 .login-tipo input:checked + span {
-    border-color: #2563eb;
-    background: #2563eb;
+    border-color: #065eb8;
+    background: #065eb8;
     color: white;
 }
 
 .login-tipo input:focus-visible + span {
-    outline: 2px solid #2563eb;
+    outline: 2px solid #065eb8;
     outline-offset: 2px;
 }
 
@@ -3886,8 +3886,8 @@ button:disabled .fa-spin {
     font-weight: 700;
     padding: 4px 10px;
     border-radius: 20px;
-    background: #eff6ff;
-    color: #2563eb;
+    background: #eef5fc;
+    color: #065eb8;
     white-space: nowrap;
 }
 
@@ -3971,7 +3971,7 @@ button:disabled .fa-spin {
 }
 
 .linha-reserva strong {
-    color: #172554;
+    color: #00142d;
 }
 
 .linha-reserva span {
@@ -4012,7 +4012,7 @@ PAINEL ADMINISTRATIVO (admin.html)
     align-items: center;
     justify-content: center;
     padding: 24px 16px;
-    background: linear-gradient(135deg, #172554, #1e40af);
+    background: linear-gradient(135deg, #00142d, #044386);
 }
 
 .admin-acesso-card {
@@ -4021,22 +4021,22 @@ PAINEL ADMINISTRATIVO (admin.html)
     background: white;
     border-radius: 16px;
     padding: 32px 28px;
-    box-shadow: 0 20px 50px rgba(15, 23, 42, .35);
+    box-shadow: 0 20px 50px rgba(0, 20, 45, .35);
 }
 
 .admin-acesso-logo {
     justify-content: center;
     margin-bottom: 18px;
-    color: #2563eb;
+    color: #065eb8;
 }
 
 .admin-acesso-logo .destaque {
-    color: #172554;
+    color: #00142d;
 }
 
 .admin-acesso-card h1 {
     font-size: 22px;
-    color: #172554;
+    color: #00142d;
     text-align: center;
 }
 
@@ -4069,7 +4069,7 @@ PAINEL ADMINISTRATIVO (admin.html)
     margin-top: 18px;
     text-align: center;
     font-size: 13px;
-    color: #2563eb;
+    color: #065eb8;
     text-decoration: none;
 }
 
@@ -4125,7 +4125,7 @@ PAINEL ADMINISTRATIVO (admin.html)
 .admin-tabela td {
     padding: 12px;
     border-bottom: 1px solid #f2f4f7;
-    color: #172554;
+    color: #00142d;
     vertical-align: top;
 }
 
@@ -4196,7 +4196,7 @@ PAINEL ADMINISTRATIVO (admin.html)
 
 .admin-barra strong {
     text-align: right;
-    color: #172554;
+    color: #00142d;
 }
 
 .admin-barra-trilho {
@@ -4209,7 +4209,7 @@ PAINEL ADMINISTRATIVO (admin.html)
 .admin-barra-valor {
     height: 100%;
     border-radius: 5px;
-    background: #2563eb;
+    background: #065eb8;
 }
 
 .admin-barra-valor.solicitada { background: #f59e0b; }
@@ -4231,13 +4231,13 @@ PAINEL ADMINISTRATIVO (admin.html)
     padding: 10px 0;
     border-bottom: 1px solid #f2f4f7;
     font-size: 13px;
-    color: #172554;
+    color: #00142d;
 }
 
 .admin-rotas li::before {
     counter-increment: rota;
     content: counter(rota) ".";
-    color: #2563eb;
+    color: #065eb8;
     font-weight: 700;
     margin-right: 8px;
 }
@@ -4329,13 +4329,13 @@ SERVIÇOS DO MOTORISTA E ENTREGAS
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #eff6ff;
-    color: #2563eb;
+    background: #eef5fc;
+    color: #065eb8;
 }
 
 .servico-opcao strong {
     font-size: 14px;
-    color: #172554;
+    color: #00142d;
 }
 
 .servico-opcao small {
@@ -4346,18 +4346,18 @@ SERVIÇOS DO MOTORISTA E ENTREGAS
 }
 
 .servico-opcao input:checked + span {
-    border-color: #2563eb;
-    background: #eff6ff;
-    box-shadow: 0 0 0 1px #2563eb inset;
+    border-color: #065eb8;
+    background: #eef5fc;
+    box-shadow: 0 0 0 1px #065eb8 inset;
 }
 
 .servico-opcao input:checked + span i {
-    background: #2563eb;
+    background: #065eb8;
     color: white;
 }
 
 .servico-opcao input:focus-visible + span {
-    outline: 2px solid #2563eb;
+    outline: 2px solid #065eb8;
     outline-offset: 2px;
 }
 
@@ -4422,7 +4422,7 @@ SERVIÇOS DO MOTORISTA E ENTREGAS
 }
 
 .entregas-aba.ativo {
-    background: #2563eb;
+    background: #065eb8;
     color: white;
 }
 
@@ -4445,7 +4445,7 @@ SERVIÇOS DO MOTORISTA E ENTREGAS
 }
 
 .entregas-capacidade a {
-    color: #2563eb;
+    color: #065eb8;
     font-weight: 600;
 }
 
@@ -4466,7 +4466,7 @@ SERVIÇOS DO MOTORISTA E ENTREGAS
 
 .entrega-card {
     border: 1px solid #e4e7ec;
-    border-left: 4px solid #2563eb;
+    border-left: 4px solid #065eb8;
     border-radius: 12px;
     padding: 18px;
     background: white;
@@ -4493,15 +4493,15 @@ SERVIÇOS DO MOTORISTA E ENTREGAS
 .entrega-plataforma {
     padding: 4px 10px;
     border-radius: 20px;
-    background: #eff6ff;
-    color: #1d4ed8;
+    background: #eef5fc;
+    color: #054f9c;
     font-size: 11px;
     font-weight: 700;
 }
 
 .entrega-plataforma.plataforma-mercado_livre { background: #fef9c3; color: #854d0e; }
 .entrega-plataforma.plataforma-shopee { background: #ffedd5; color: #c2410c; }
-.entrega-plataforma.plataforma-amazon { background: #f1f5f9; color: #0f172a; }
+.entrega-plataforma.plataforma-amazon { background: #f1f5f9; color: #000c1d; }
 
 .entrega-codigo {
     margin-left: auto;
@@ -4511,15 +4511,15 @@ SERVIÇOS DO MOTORISTA E ENTREGAS
 }
 
 .status-reserva.andamento {
-    background: #eff6ff;
-    color: #2563eb;
+    background: #eef5fc;
+    color: #065eb8;
 }
 
 .entrega-descricao {
     margin: 0 0 14px;
     font-size: 15px;
     font-weight: 600;
-    color: #172554;
+    color: #00142d;
 }
 
 .entrega-rota {
@@ -4548,7 +4548,7 @@ SERVIÇOS DO MOTORISTA E ENTREGAS
 
 .entrega-rota strong {
     font-size: 13px;
-    color: #172554;
+    color: #00142d;
     font-weight: 600;
 }
 
@@ -4558,7 +4558,7 @@ SERVIÇOS DO MOTORISTA E ENTREGAS
 }
 
 .entrega-seta {
-    color: #2563eb;
+    color: #065eb8;
     margin-top: 22px;
 }
 
@@ -4570,7 +4570,7 @@ SERVIÇOS DO MOTORISTA E ENTREGAS
 
 .entrega-detalhes strong {
     font-size: 13px;
-    color: #172554;
+    color: #00142d;
 }
 
 .entrega-valor {
@@ -4585,7 +4585,7 @@ SERVIÇOS DO MOTORISTA E ENTREGAS
 }
 
 .entrega-obs i {
-    color: #2563eb;
+    color: #065eb8;
     margin-right: 4px;
 }
 
@@ -4601,7 +4601,7 @@ SERVIÇOS DO MOTORISTA E ENTREGAS
 .entrega-contatos strong {
     display: block;
     font-size: 13px;
-    color: #172554;
+    color: #00142d;
 }
 
 .entrega-whatsapp {
@@ -4633,7 +4633,7 @@ SERVIÇOS DO MOTORISTA E ENTREGAS
 
 .entrega-motorista strong {
     display: block;
-    color: #172554;
+    color: #00142d;
 }
 
 .entrega-motorista small {
@@ -4693,7 +4693,7 @@ SERVIÇOS DO MOTORISTA E ENTREGAS
 
 .entrega-etapas li.feita::before,
 .entrega-etapas li.atual::before {
-    background: #2563eb;
+    background: #065eb8;
 }
 
 .entrega-etapa-ponto {
@@ -4712,19 +4712,19 @@ SERVIÇOS DO MOTORISTA E ENTREGAS
 
 .entrega-etapas li.feita .entrega-etapa-ponto,
 .entrega-etapas li.atual .entrega-etapa-ponto {
-    background: #2563eb;
+    background: #065eb8;
     color: white;
 }
 
 .entrega-etapas li.atual .entrega-etapa-ponto {
-    box-shadow: 0 0 0 4px #bfdbfe;
+    box-shadow: 0 0 0 4px #b5d2ef;
 }
 
 .entrega-etapas strong {
     display: block;
     margin-top: 6px;
     font-size: 12px;
-    color: #172554;
+    color: #00142d;
 }
 
 .entrega-etapas li:not(.feita):not(.atual) strong {
@@ -4750,11 +4750,11 @@ SERVIÇOS DO MOTORISTA E ENTREGAS
     gap: 8px;
     margin: 18px 0 4px;
     font-size: 15px;
-    color: #172554;
+    color: #00142d;
 }
 
 .entrega-form h3 i {
-    color: #2563eb;
+    color: #065eb8;
 }
 
 .entrega-form-grid {
@@ -4864,7 +4864,7 @@ a.logo {
 }
 
 nav a.ativo {
-    color: #2563eb;
+    color: #065eb8;
     font-weight: 700;
 }
 
@@ -4875,15 +4875,15 @@ a.btn-motorista {
 /* banner do index que leva à Área de Envios */
 .envios-banner {
     margin-bottom: 24px;
-    background: linear-gradient(135deg, #1e40af, #2563eb);
+    background: linear-gradient(135deg, #044386, #065eb8);
 }
 
 .envios-banner span {
-    color: #bfdbfe;
+    color: #b5d2ef;
 }
 
 .envios-banner p {
-    color: #dbeafe;
+    color: #d9e8f7;
 }
 
 .botao-banner {
@@ -4892,7 +4892,7 @@ a.btn-motorista {
     gap: 8px;
     flex: none;
     background: white;
-    color: #1e40af;
+    color: #044386;
     padding: 16px 22px;
     border-radius: 10px;
     font-weight: 700;
@@ -4902,7 +4902,7 @@ a.btn-motorista {
 /* apresentação */
 .envios-hero {
     padding: 60px 10% 40px;
-    background: linear-gradient(135deg, #eff6ff, #ffffff);
+    background: linear-gradient(135deg, #eef5fc, #ffffff);
     text-align: center;
 }
 
@@ -4910,8 +4910,8 @@ a.btn-motorista {
     display: inline-block;
     padding: 7px 14px;
     border-radius: 20px;
-    background: #dbeafe;
-    color: #2563eb;
+    background: #d9e8f7;
+    color: #065eb8;
     font-size: 12px;
     font-weight: 700;
     letter-spacing: .04em;
@@ -4920,7 +4920,7 @@ a.btn-motorista {
 .envios-hero h1 {
     margin: 16px 0 10px;
     font-size: 38px;
-    color: #172554;
+    color: #00142d;
 }
 
 .envios-hero > p {
@@ -4948,7 +4948,7 @@ a.btn-motorista {
     padding: 16px;
     border-radius: 14px;
     background: white;
-    box-shadow: 0 8px 25px rgba(15, 23, 42, .06);
+    box-shadow: 0 8px 25px rgba(0, 20, 45, .06);
 }
 
 .envios-passos i {
@@ -4959,12 +4959,12 @@ a.btn-motorista {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #eff6ff;
-    color: #2563eb;
+    background: #eef5fc;
+    color: #065eb8;
 }
 
 .envios-passos strong {
-    color: #172554;
+    color: #00142d;
     font-size: 14px;
 }
 
@@ -4985,11 +4985,11 @@ a.btn-motorista {
     background: white;
     border-radius: 16px;
     padding: 26px;
-    box-shadow: 0 10px 30px rgba(15, 23, 42, .06);
+    box-shadow: 0 10px 30px rgba(0, 20, 45, .06);
 }
 
 .envios-card h2 {
-    color: #172554;
+    color: #00142d;
     font-size: 20px;
     margin-bottom: 14px;
 }
@@ -5016,7 +5016,7 @@ a.btn-motorista {
 }
 
 .envios-aviso > i {
-    color: #2563eb;
+    color: #065eb8;
     font-size: 24px;
     margin-top: 4px;
 }
@@ -5051,7 +5051,7 @@ a.btn-motorista {
     margin-bottom: 16px;
     padding: 16px 20px;
     border-radius: 14px;
-    background: #172554;
+    background: #00142d;
     color: white;
 }
 
@@ -5061,7 +5061,7 @@ a.btn-motorista {
     font-weight: 700;
     letter-spacing: .04em;
     text-transform: uppercase;
-    color: #93c5fd;
+    color: #8ab8e6;
 }
 
 .envios-conta strong {
@@ -5098,7 +5098,7 @@ a.btn-motorista {
 }
 
 .entrega-veiculo-dica i {
-    color: #2563eb;
+    color: #065eb8;
     margin-right: 4px;
 }
 
@@ -5205,4 +5205,17 @@ footer .logo .logo-completo {
     .logo-marca {
         height: 32px;
     }
+}
+
+
+/* telefone/WhatsApp dentro do texto do rodapé */
+footer p a {
+    display: inline;
+    margin: 0;
+    color: inherit;
+    font-size: inherit;
+}
+
+footer p a:hover {
+    color: white;
 }
